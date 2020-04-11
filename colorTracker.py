@@ -34,6 +34,37 @@ UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
 cap = cv2.VideoCapture(0)
 
+def moveDirection(xval, yval):
+    # maps colortracked coords to a 3 X 3 grid of movements
+
+    # backwards movement
+    if ((xval > 1280) and (xval < 1920)) and ((yval > 720) and (yval < 1080)):
+        return "move_back_right"
+
+    elif ((xval > 0) and (xval < 640)) and ((yval > 720) and (yval < 1080)):
+        return "move_back_left"
+
+    elif ((xval > 640) and (xval < 1280)) and ((yval > 720) and (yval < 1080)):
+        return "move_back"
+
+    # forwards movement
+    elif ((xval > 1280) and (xval < 1920)) and ((yval > 0) and (yval < 360)):
+        return "move_forward_right"
+    elif ((xval > 0) and (xval < 640)) and ((yval > 0) and (yval < 360)):
+        return "move_forward_left"
+    elif ((xval > 640) and (xval < 1280)) and ((yval > 0) and (yval < 360)):
+        return "move_forward"
+
+        # left, right, stand_still movements
+    elif ((xval > 1280) and (xval < 1920)) and ((yval > 360) and (yval < 720)):
+        return "move_right"
+    elif ((xval > 0) and (xval < 640)) and ((yval > 360) and (yval < 720)):
+        return "move_left"
+
+    elif ((xval > 640) and (xval < 1280)) and ((yval > 360) and (yval < 720)):
+        return "stand_still"
+    else:
+        return "stand_still"
 
 while True:
     # _ is used to unpack values we don't want to use
@@ -95,11 +126,13 @@ while True:
 
             # prints coordinates of upper-left (x,y)
             # prints coordinates of center (x,y)
-            print('YELLOW_ ','UPL-X: ',x, 'UPL-Y: ', y , 'C-X: ', cx, 'C-Y', cy)
+            #print('YELLOW_ ','UPL-X: ',x, 'UPL-Y: ', y , 'C-X: ', cx, 'C-Y', cy)
             # converts cx,cy and sends over UDP to panda3D server
-            cents = str.encode(f'{cx},{cy}')
+            #print(moveDirection(cx,cy))
+            #cents = str.encode(f'{cx},{cy}')
+            cents = str.encode(moveDirection(cx,cy))
             UDPClientSocket.sendto(cents, serverAddressPort)
-            print(cx, cy)
+            #print(cx, cy)
 
     # finds green objects
     (contours,_) = cv2.findContours(greenMask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)

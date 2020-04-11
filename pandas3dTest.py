@@ -8,7 +8,7 @@
     -
 '''
 # Citations:
-#   - Patricks TA-led mini lecture / panda3D starter file 
+#   - Patricks TA-led mini lecture / panda3D starter file
 #   - https://discourse.panda3d.org/t/moving-setting-camera-pos-at-start-solved/2941 - cameraPos
 #
 #
@@ -93,6 +93,31 @@ class TermProject(ShowBase):
         self.thread.start()
         self.trackButton['state'] = 1
 
+    def handleMessage(self, msg, currX, currY):
+        # models movement instead of mirroring tracked objects (x,y)
+        if msg == 'move_forward':
+            self.shape.setY(currY + 10)
+        elif msg == 'move_back':
+            self.shape.setY(currY - 10)
+        elif msg == 'move_left':
+            self.shape.setX(currX - 10)
+            self.shape.setH(90)
+        elif msg == 'move_right':
+            self.shape.setX(currX + 10)
+        elif msg == 'move_forward_right':
+            self.shape.setX(currX + 10)
+            self.shape.setY(currY + 10)
+        elif msg == 'move_forward_left':
+            self.shape.setX(currX - 10)
+            self.shape.setY(currY + 10)
+        elif msg == 'move_back_right':
+            self.shape.setX(currX + 10)
+            self.shape.setY(currY - 10)
+        elif msg == 'move_back_left':
+            self.shape.setX(currX - 10)
+            self.shape.setY(currY - 10)
+        else:
+            self.shape.setX(currX)
 
     def udpConnect(self):
         localIP     = "127.0.0.1"
@@ -104,25 +129,37 @@ class TermProject(ShowBase):
 
         UDPServerSocket.bind((localIP, localPort))
 
+
+
         print("UDP server up and listening")
         while(True):
+            (currX, currY) = (self.shape.getX(), self.shape.getY())
+
             bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
             message = bytesAddressPair[0]
             address = bytesAddressPair[1]
             clientMsg = message.decode()
             clientIP  = "Client IP Address:{}".format(address)
+            print('server listened message from client: ', clientMsg)
+            self.handleMessage(clientMsg, currX, currY)
+            '''
             print(clientMsg[:].split(',')[0])
             #print(clientIP)
             cx = int(clientMsg[:].split(',')[0])
             self.shape.setX(-cx//2)
             cy = int(clientMsg[:].split(',')[1])
             self.shape.setY(-cy//2)
-
+            '''
 
 
             # Sending a reply to client
 
             UDPServerSocket.sendto(bytesToSend, address)
+
+
+
+
+
     def loadModels(self):
         self.shape = loader.loadModel('models/isospherebaby2.x')
         self.shape.reparent_to(self.render)
@@ -187,14 +224,15 @@ class TermProject(ShowBase):
 
     def loadEnvironment(self):
         # Load the environment model.
-        self.scene = self.loader.loadModel("models/gridbacking5.x")
+        #self.scene = self.loader.loadModel("models/gridbacking5.x")
+        self.scene = self.loader.loadModel("mirroredwalltest.x")
 
         # Reparent the model to render.
         self.scene.reparentTo(self.render)
         # Apply scale and position transforms on the model.
-        self.scene.setScale(20, 20, 20)
+        self.scene.setScale(80, 80, 80)
         self.scene.setPos(-8, 42, -100)
-        self.scene.setHpr(90, 270, 0)
+        self.scene.setHpr(90, -270, 0)
 
         # testing adding multiple environment models
         self.wall = self.loader.loadModel("models/gridbacking5.x")
@@ -292,6 +330,7 @@ class TermProject(ShowBase):
 
         self.camera.setX(newX+500)
         self.camera.setY(newY-500)
+        self.camera.lookAt(self.shape)
 
         self.shape.setH(newH)
         self.shape.setP(newP)

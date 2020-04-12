@@ -1,48 +1,3 @@
-###############################################################################
-# Name: Morgan Visnesky
-# AndewID: mvisnesk
-# FileName: bulletPhysicsTest.py
-###############################################################################
-'''
-    - Trial run using alternate physics option built into panda3D
-    - Trial run instancing objects and materials in a for loop
-'''
-# CITATIONS:
-# https://docs.panda3d.org/1.10/python/programming/physics/bullet/hello-world
-# https://docs.panda3d.org/1.10/python/programming/scene-graph/instancing
-# https://docs.panda3d.org/1.10/python/programming/physics/bullet/debug-renderer
-# ^^ debug renderer is super useful ^^
-# https://discourse.panda3d.org/t/picker-class-for-panda3d-objects/15831
-# ^^ picker class ^^
-
-import direct.directbase.DirectStart
-from direct.showbase.ShowBase import ShowBase
-from panda3d.core import Vec3
-from panda3d.bullet import BulletWorld
-from panda3d.bullet import BulletPlaneShape
-from panda3d.bullet import BulletRigidBodyNode
-from panda3d.bullet import BulletBoxShape
-from panda3d.core import *
-from direct.actor.Actor import Actor
-from panda3d.bullet import BulletDebugNode
-from panda3d.physics import *
-debugNode = BulletDebugNode('Debug')
-debugNode.showWireframe(True)
-debugNode.showConstraints(True)
-debugNode.showBoundingBoxes(False)
-debugNode.showNormals(False)
-debugNP = render.attachNewNode(debugNode)
-debugNP.show()
-
-base.cam.setPos(20, -100, 40)
-base.cam.lookAt(0, 0, 0)
-
-
-
-
-
-
-
 '''
 Picker class for Panda3d.
 
@@ -83,7 +38,6 @@ class Picker(object):
         pickerNode.add_solid(self.pickerRay)
         pickerNode.set_from_collide_mask(self.collideMask)
         pickerNode.set_into_collide_mask(BitMask32.all_off())
-        pickerNode.node().getPhysicsObject().setMass(10)
         self.cTrav.add_collider(self.render.attach_new_node(pickerNode), self.collisionHandler)
         # service data
         self.pickedBody = None
@@ -125,7 +79,6 @@ class Picker(object):
                                 return
                         #
                         self.pickedBody = pickedObject
-
                         self.oldPickingDist = (hitPos - rayFromWorld).length()
                         self.deltaDist = (self.pickedBody.get_pos(self.render) - hitPos)
                         print(self.pickedBody.get_name(), hitPos)
@@ -138,15 +91,12 @@ class Picker(object):
                             self.updateTask.set_sort(0)
                             self.updateTask.set_priority(0)
         else:
-
             if self.dragging:
                 # remove pick body motion update task
                 self.taskMgr.remove("_movePickedBody")
                 self.updateTask = None
                 self.dragging = False
                 self.pickedBody = None
-
-
 
     def _movePickedBody(self, task):
         # handle picked body if any
@@ -166,149 +116,55 @@ class Picker(object):
                     direction = (rayToWorld - rayFromWorld).normalized()
                     direction *= self.oldPickingDist
                     self.pickedBody.set_pos(self.render, rayFromWorld + direction + self.deltaDist)
-                    #self.pickedBody.reparentTo(np)
-                    #self.pickedBody.setMass(10.0)
-
         #
         return task.cont
 
+if __name__ == "__main__":
+    app = ShowBase()
 
-PICKABLETAG = "pickable"
-PICKKEYON = "mouse3"
-PICKKEYOFF = "mouse3-up"
-picker = Picker(base, base.render, base.cam, base.mouseWatcher, PICKKEYON, PICKKEYOFF,
-                BitMask32.all_on(), PICKABLETAG)
-# World
-world = BulletWorld()
-world.setGravity(Vec3(0, 0, -9.81))
-#world.setDebugNode(debugNP.node())
-for i in range(50):
-    '''
-    shape = BulletPlaneShape(Vec3(0, 0, 1), 1)
-    node = BulletRigidBodyNode('Ground')
-    node.addShape(shape)
-    np = render.attachNewNode(node)
-    np.setPos(0, 0, -2)
-    world.attachRigidBody(node)
-    '''
-    # Box
-    shape = BulletBoxShape(Vec3(1.5, 0.75, 0.5))
-    node = BulletRigidBodyNode('Box')
-    node.setMass(10.0)
-    node.addShape(shape)
-    np = render.attachNewNode(node)
-    np.setPos(0, 0, (i*5)+15)
-    world.attachRigidBody(node)
-    model = loader.loadModel('models/isospherebaby2.x')
-    model.setScale(0.5,0.5,0.25)
-    #model.flattenLight()
-    model.reparentTo(np)
-    model.set_tag(PICKABLETAG, "")
+    # create the picker
+    PICKABLETAG = "pickable"
+    PICKKEYON = "mouse3"
+    PICKKEYOFF = "mouse3-up"
+    picker = Picker(app, app.render, app.cam, app.mouseWatcher, PICKKEYON, PICKKEYOFF,
+                    BitMask32.all_on(), PICKABLETAG)
 
-# lights coppied from pandas3dTest.py file
-# Plane
-shape = BulletPlaneShape(Vec3(0, 0, 1), 1)
-node = BulletRigidBodyNode('Ground')
-node.addShape(shape)
-np = render.attachNewNode(node)
-np.setPos(0, 0, -2)
-world.attachRigidBody(node)
-model = loader.loadModel('mirroredwalltest.x')
-model.setPos(0,0,-1.5)
-model.setScale(4,4,4)
-model.setHpr(90, -270, 0)
-model.reparentTo(np)
-
-shape = BulletBoxShape(Vec3(0.5, 50, 10))
-node = BulletRigidBodyNode('Wall')
-node.addShape(shape)
-np = render.attachNewNode(node)
-np.setPos(-30, 0, 5)
-world.attachRigidBody(node)
-
-shape = BulletBoxShape(Vec3(0.5, 50, 10))
-node = BulletRigidBodyNode('Wall')
-node.addShape(shape)
-np = render.attachNewNode(node)
-np.setPos(30, 0, 5)
-world.attachRigidBody(node)
-
-shape = BulletBoxShape(Vec3(0.5, 35, 10))
-node = BulletRigidBodyNode('Wall')
-node.addShape(shape)
-np = render.attachNewNode(node)
-np.setPos(-10, -38, 5)
-np.setHpr(90,0,0)
-world.attachRigidBody(node)
-
-shape = BulletBoxShape(Vec3(1.5, 2.5, 100))
-node = BulletRigidBodyNode('Tower')
-node.addShape(shape)
-np = render.attachNewNode(node)
-np.setPos(-5, -20, 5)
-np.setHpr(90,0,0)
-world.attachRigidBody(node)
-
-shape = BulletBoxShape(Vec3(1, 2, 100))
-node = BulletRigidBodyNode('Tower')
-node.addShape(shape)
-np = render.attachNewNode(node)
-np.setPos(-18, 24, 5)
-np.setHpr(90,0,0)
-world.attachRigidBody(node)
-
-# Box
-shape = BulletBoxShape(Vec3(0.5, 0.5, 0.5))
-node = BulletRigidBodyNode('Box')
-node.setMass(1.0)
-node.addShape(shape)
-np = render.attachNewNode(node)
-np.setPos(0, 0, 15)
-world.attachRigidBody(node)
-model = loader.loadModel('models/isospherebaby2.x')
-model.setScale(0.5,0.5,0.5)
-#model.flattenLight()
-model.reparentTo(np)
-
-alight = AmbientLight('alight')
-alight.setColor((0.2, 0.2, 0.2, 1))
-alnp = render.attachNewNode(alight)
-render.setLight(alnp)
-
-dirLight = DirectionalLight('directional')
-dirLight.setColor(Vec4(0.1, 0.4, 0.1, 1.0))
-dirNode = render.attachNewNode(dirLight)
-dirNode.setHpr(60, 0, 90)
-render.setLight(dirNode)
-
-dirLight1 = DirectionalLight('directional')
-dirLight1.setColor(Vec4(0.6, 0.4, 0.3, 0.7))
-dirNode1 = render.attachNewNode(dirLight1)
-dirNode1.setHpr(100, 0, 90)
-render.setLight(dirNode1)
-
-'''
-dancer = loader.loadModel('models/isospherebaby2.x')
-#dancer.loop("kick")
-#dancer.setPos(0,0,0)
-dancer.setScale(0.5,0.5,0.5)
-for i in range(50):
-    placeholder = render.attachNewNode("Dancer-Placeholder")
-    placeholder.setPos(i*10, i*20, i*50)
-    dancer.instanceTo(placeholder)
-'''
-
-
-
-# Update
-def update(task):
-    dt = globalClock.getDt()
-    world.doPhysics(dt)
-
-    return task.cont
-
-
-base.disable_mouse()
-taskMgr.add(update, 'update')
-
-base.run()
+    # some scene data
+    numR = 3
+    numC = 3
+    dist = 5
+    dimRMin = -((numR - 1) * dist) / 2.0
+    dimCMin = -((numC - 1) * dist) / 2.0
+    # ground
+    cm = CardMaker("ground")
+    left, right, bottom, top = dimCMin * 1.1, -dimCMin * 1.1, dimRMin * 1.1, -dimRMin * 1.1
+    cm.setFrame(left, right, bottom, top)
+    ground = app.render.attach_new_node(cm.generate())
+    ground.set_pos(0, 0, 0)
+    ground.set_p(-90)
+    ground.set_color(0.2, 0.6, 0.4, 1)
+    ground.set_tag(PICKABLETAG, "")
+    # panda
+    panda = app.loader.load_model("panda")
+    panda.reparent_to(app.render)
+    panda.set_pos(0, 0, 6)
+    panda.set_scale(0.5)
+    panda.set_tag(PICKABLETAG, "")
+    # smiley
+    smiley = app.loader.load_model("isospherebaby2.x")
+    for r in range(numR):
+        for c in range(numC):
+            smileyInst = NodePath("smiley_" + str(r) + "_" + str(c))
+            smiley.instance_to(smileyInst)
+            smileyInst.reparent_to(app.render)
+            smileyInst.set_pos(dimCMin + dist * c, dimRMin + dist * r, 3)
+            smileyInst.set_tag(PICKABLETAG, "")
+    # setup camera
+#     trackball = app.trackball.node()
+#     trackball.set_pos(0.0, max(-dimRMin * 2, -dimCMin * 2) * 2, -2.0)
+#     trackball.set_hpr(0.0, 25.0, 0.0)
+    app.disable_mouse()
+    app.camera.set_pos(0.0, max(dimRMin * 2, dimCMin * 2) * 3, 8.0)
+    app.camera.set_hpr(0.0, -5.0, 0.0)
+    # run
+    app.run()

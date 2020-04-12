@@ -100,21 +100,21 @@ class TermProject(ShowBase):
         elif msg == 'move_back':
             self.shape.setY(currY - 10)
         elif msg == 'move_left':
-            self.shape.setX(currX - 10)
+            self.shape.setX(currX + 10)
             self.shape.setH(90)
         elif msg == 'move_right':
-            self.shape.setX(currX + 10)
+            self.shape.setX(currX - 10)
         elif msg == 'move_forward_right':
-            self.shape.setX(currX + 10)
+            self.shape.setX(currX - 10)
             self.shape.setY(currY + 10)
         elif msg == 'move_forward_left':
-            self.shape.setX(currX - 10)
+            self.shape.setX(currX + 10)
             self.shape.setY(currY + 10)
         elif msg == 'move_back_right':
-            self.shape.setX(currX + 10)
+            self.shape.setX(currX - 10)
             self.shape.setY(currY - 10)
         elif msg == 'move_back_left':
-            self.shape.setX(currX - 10)
+            self.shape.setX(currX + 10)
             self.shape.setY(currY - 10)
         else:
             self.shape.setX(currX)

@@ -33,40 +33,55 @@ bufferSize          = 1024
 UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
 cap = cv2.VideoCapture(0)
+object_tag = ''
 
 def moveDirection(xval, yval):
     # maps colortracked coords to a 3 X 3 grid of movements
 
     # backwards movement
     if ((xval > 1280) and (xval < 1920)) and ((yval > 720) and (yval < 1080)):
-        return "move_back_right"
+        object_tag = 'moving back to the right'
+        return ("move_back_right",object_tag)
 
     elif ((xval > 0) and (xval < 640)) and ((yval > 720) and (yval < 1080)):
-        return "move_back_left"
+        object_tag = 'moving back to the left'
+        return ("move_back_left",object_tag)
 
     elif ((xval > 640) and (xval < 1280)) and ((yval > 720) and (yval < 1080)):
-        return "move_back"
+        object_tag = 'moving back'
+        return ("move_back",object_tag)
 
     # forwards movement
     elif ((xval > 1280) and (xval < 1920)) and ((yval > 0) and (yval < 360)):
-        return "move_forward_right"
+        object_tag = 'moving forward to the right'
+        return ("move_forward_right",object_tag)
+
     elif ((xval > 0) and (xval < 640)) and ((yval > 0) and (yval < 360)):
-        return "move_forward_left"
+        object_tag = 'moving forward to the left'
+        return ("move_forward_left",object_tag)
+
     elif ((xval > 640) and (xval < 1280)) and ((yval > 0) and (yval < 360)):
-        return "move_forward"
+        object_tag = 'moving forward'
+        return ("move_forward",object_tag)
+
 
         # left, right, stand_still movements
     elif ((xval > 1280) and (xval < 1920)) and ((yval > 360) and (yval < 720)):
-        return "move_right"
+        object_tag = 'moving right'
+        return ("move_right",object_tag)
     elif ((xval > 0) and (xval < 640)) and ((yval > 360) and (yval < 720)):
-        return "move_left"
+        object_tag = 'moving left'
+        return ("move_left",object_tag)
 
     elif ((xval > 640) and (xval < 1280)) and ((yval > 360) and (yval < 720)):
-        return "stand_still"
+        object_tag = 'standing still'
+        return ("stand_still",object_tag)
     else:
-        return "stand_still"
+        object_tag = 'standing still'
+        return ("stand_still",object_tag)
 
 while True:
+    object_tag = ''
     # _ is used to unpack values we don't want to use
     _, frame = cap.read()
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -91,7 +106,7 @@ while True:
     # Red - not done yet
 
 
-
+    '''
     # unpacks as two values instead of three because of cv2 versioning
     # finds blue objects
     (contours,_) = cv2.findContours(blueMask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -109,7 +124,7 @@ while True:
             # prints coordinates of upper-left (x,y)
             # prints coordinates of center (x,y)
             #print('BLUE_ ','UPL-X: ',x, 'UPL-Y: ', y , 'C-X: ', cx, 'C-Y', cy)
-
+    '''
 
     # finds yellow objects
     (contours,_) = cv2.findContours(yelMask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -120,9 +135,11 @@ while True:
             x,y,w,h = cv2.boundingRect(contour)
             cx = x + (w//2)
             cy = y + (h//2)
+            (val,text) = moveDirection(cx,cy)
             # changed to show center of object
-            frame = cv2.rectangle(frame, (cx,cy),(x+w//2, y+h//2), (0,0,255), 10)
-            cv2.putText(frame,"Yellow color",(x,y),cv2.FONT_HERSHEY_TRIPLEX, 2.0, (0,255,255), 6)
+            #frame = cv2.rectangle(frame, (cx,cy),(x+w//2, y+h//2), (0,0,255), 10) # center
+            frame = cv2.rectangle(frame, (x,y),(x+w, y+h), (0,0,255), 10)
+            cv2.putText(frame,text,(x+15,y-45),cv2.FONT_HERSHEY_TRIPLEX, 1.0, (255,255,255), 3)
 
             # prints coordinates of upper-left (x,y)
             # prints coordinates of center (x,y)
@@ -130,10 +147,11 @@ while True:
             # converts cx,cy and sends over UDP to panda3D server
             #print(moveDirection(cx,cy))
             #cents = str.encode(f'{cx},{cy}')
-            cents = str.encode(moveDirection(cx,cy))
+            cents = str.encode(val)
+            print(cents)
             UDPClientSocket.sendto(cents, serverAddressPort)
             #print(cx, cy)
-
+    '''
     # finds green objects
     (contours,_) = cv2.findContours(greenMask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     for contour in contours:
@@ -150,7 +168,14 @@ while True:
             # prints coordinates of upper-left (x,y)
             # prints coordinates of center (x,y)
             #print('GREEN_ ','UPL-X: ',x, 'UPL-Y: ', y , 'C-X: ', cx, 'C-Y', cy)
+    '''
+    #vertical lines
+    frame = cv2.line(frame,(640,0),(640,1080),(255,0,0),2)
+    frame = cv2.line(frame,(1280,0),(1280,1080),(255,0,0),2)
 
+    # horizontal lines
+    frame = cv2.line(frame,(0,360),(1920,360),(255,0,0),2)
+    frame = cv2.line(frame,(0,720),(1920,720),(255,0,0),2)
     cv2.imshow('tracking', frame)
 
     #cv2.imshow('c-tracking', cFrame)

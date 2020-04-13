@@ -242,7 +242,7 @@ class TermProject(ShowBase):
         self.wall.setHpr(90, 0, 90)
 
     def setCameraPos(self):
-        self.disable_mouse()
+        #self.disable_mouse()
         #(x,y,z) = self.shape.getPos()
         self.camera.set_pos_hpr(500,-500,250,45,-22.5,0)
         #self.camera.reparent_to(self.shape)
@@ -328,8 +328,9 @@ class TermProject(ShowBase):
         self.shape.setY(newY)
         self.shape.setZ(newZ)
 
-        self.camera.setX(newX+500)
-        self.camera.setY(newY-500)
+        self.camera.setX(newX+1000)
+        self.camera.setY(newY-1000)
+        self.camera.setZ(newZ+200)
         self.camera.lookAt(self.shape)
 
         self.shape.setH(newH)

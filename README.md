@@ -52,3 +52,8 @@ Shape-boi aims to be an interactive VR-like social experience.  Built using pyth
 * Collision detection.
 * Exit openCV when closing app.
 * Turn UDP handler into its own class.
+
+
+# NOTES
+https://github.com/09th/YABEE/blob/master/YABEE_HowTo.pdf
+https://www.youtube.com/playlist?list=PLcMfSPR_1EGipilDrE2AfIYG36JCwwM1l

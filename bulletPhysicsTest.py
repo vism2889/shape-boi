@@ -80,10 +80,14 @@ class Picker(object):
         self.collisionHandler = CollisionHandlerQueue()
         self.pickerRay = CollisionRay()
         pickerNode = CollisionNode("Utilities.pickerNode")
+        node = NodePath("PhysicsNode")
+        node.reparentTo(render)
+        anp = node.attachNewNode(pickerNode)
+        base.physicsMgr.attachPhysicalNode(pickerNode)
         pickerNode.add_solid(self.pickerRay)
         pickerNode.set_from_collide_mask(self.collideMask)
         pickerNode.set_into_collide_mask(BitMask32.all_off())
-        pickerNode.node().getPhysicsObject().setMass(10)
+        #pickerNode.node().getPhysicsObject().setMass(10)
         self.cTrav.add_collider(self.render.attach_new_node(pickerNode), self.collisionHandler)
         # service data
         self.pickedBody = None
@@ -310,5 +314,4 @@ def update(task):
 
 base.disable_mouse()
 taskMgr.add(update, 'update')
-
 base.run()

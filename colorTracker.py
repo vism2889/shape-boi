@@ -104,6 +104,8 @@ while True:
     greenMask = cv2.inRange(hsv, lowerColG, upperColG)
 
     # Red - not done yet
+    res = cv2.bitwise_and(frame,frame, mask= yelMask)
+
 
 
     '''
@@ -148,7 +150,7 @@ while True:
             #print(moveDirection(cx,cy))
             #cents = str.encode(f'{cx},{cy}')
             cents = str.encode(val)
-            print(cents)
+            #print(cents)
             UDPClientSocket.sendto(cents, serverAddressPort)
             #print(cx, cy)
     '''
@@ -169,6 +171,11 @@ while True:
             # prints coordinates of center (x,y)
             #print('GREEN_ ','UPL-X: ',x, 'UPL-Y: ', y , 'C-X: ', cx, 'C-Y', cy)
     '''
+    #cv2.imshow('frame',frame)
+    #cv2.imshow('mask',yelMask)
+    #cv2.imshow('res',res)
+
+
     #vertical lines
     frame = cv2.line(frame,(640,0),(640,1080),(255,0,0),2)
     frame = cv2.line(frame,(1280,0),(1280,1080),(255,0,0),2)
@@ -177,6 +184,7 @@ while True:
     frame = cv2.line(frame,(0,360),(1920,360),(255,0,0),2)
     frame = cv2.line(frame,(0,720),(1920,720),(255,0,0),2)
     cv2.imshow('tracking', frame)
+
 
     #cv2.imshow('c-tracking', cFrame)
 

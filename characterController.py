@@ -25,6 +25,7 @@ import time
 import subprocess
 import socket
 import threading
+from direct.gui.DirectGui import DirectFrame
 
 class Game(ShowBase):
     def __init__(self):
@@ -33,6 +34,7 @@ class Game(ShowBase):
         properties = WindowProperties()
         properties.setSize(1000, 750)
         self.win.requestProperties(properties)
+        base.setBackgroundColor(1,1,0)
         self.textObject = OnscreenText(text ='shape-boi', pos = (0.925,0.925), scale = 0.075)
 
         self.thread = threading.Thread(target=self.udpConnect)
@@ -72,6 +74,19 @@ class Game(ShowBase):
         self.camera.setPos(0, 0, 50)
         # Tilt the camera down by setting its pitch.
         self.camera.setP(-45)
+
+        self.leftCam = base.makeCamera(base.win, \
+                            displayRegion = (0.79, 0.99, 0.01, 0.21))
+        self.leftCam.setPos(0,0,50)
+        self.leftCam.setP(-45)
+
+        self.rightCam = base.makeCamera(base.win, \
+                              displayRegion = (0.79, 0.99, 0.23, 0.43))
+        self.rightCam.setZ(15)
+        self.rightCam.setY(54)
+
+
+        self.rightCam.setP(-45)
 
 
         ambientLight = AmbientLight("ambient light")
@@ -153,28 +168,28 @@ class Game(ShowBase):
         wallNode.addSolid(wallSolid)
         wall = render.attachNewNode(wallNode)
         #wall.setY(8.0)
-        wall.show()
+        #wall.show()
 
         wallSolid = CollisionTube(-10.0, 51, -2, 10, 51, -2, 1.2)
         wallNode = CollisionNode("wall")
         wallNode.addSolid(wallSolid)
         wall = render.attachNewNode(wallNode)
         wall.setY(8.0)
-        wall.show()
+        #wall.show()
 
         wallSolid = CollisionTube(-8.0, 30, -2, -8, 55, -2, 1.2)
         wallNode = CollisionNode("wall")
         wallNode.addSolid(wallSolid)
         wall = render.attachNewNode(wallNode)
         wall.setY(8.0)
-        wall.show()
+        #wall.show()
 
         wallSolid = CollisionTube(8.0, 30, -2, 8, 55, -2, 1.2)
         wallNode = CollisionNode("wall")
         wallNode.addSolid(wallSolid)
         wall = render.attachNewNode(wallNode)
         wall.setY(8.0)
-        wall.show()
+        #wall.show()
 
 
         # towers
@@ -183,14 +198,20 @@ class Game(ShowBase):
         wallNode.addSolid(wallSolid)
         wall = render.attachNewNode(wallNode)
         wall.setY(8.0)
-        wall.show()
+        #wall.show()
 
         wallSolid = CollisionTube(-4.5, 48, -4, -4.5, 48, 3, 1)
         wallNode = CollisionNode("wall")
         wallNode.addSolid(wallSolid)
         wall = render.attachNewNode(wallNode)
         wall.setY(8.0)
-        wall.show()
+        #wall.show()
+
+    def circularMovement(self, object):
+        # can call on an object to give it cirular motion
+        circle_center = render.attach_new_node('circle_center')
+        circle_center.hprInterval(2, (-360,0,0)).loop()
+        object.reparent_to(circle_center)
 
     def selectionLight(self, selection):
         vectorToObject = selection.getPos()-self.tempActor.getPos()
@@ -231,12 +252,16 @@ class Game(ShowBase):
         base.disableMouse()
         self.camera.setPos(self.tempActor.getPos()+ Vec3(0,12,4))
         self.camera.setP(-12.5)
+        self.rightCam.setPos(self.tempActor.getPos()+ Vec3(0,12,4))
+        self.rightCam.setP(-12.5)
     def cameraSet(self):
         base.disableMouse()
         self.camera.setPos(0, 0, 50)
         # Tilt the camera down by setting its pitch.
         self.camera.setP(-45)
-
+        #self.rightCam.setX(self.tempActor.getX())
+        #self.rightCam.setY(self.tempActor.getY()+40)
+        #self.rightCam.setP(-45)
 
     def updateKeyMap(self, controlName, controlState):
         self.keyMap[controlName] = controlState
@@ -254,7 +279,7 @@ class Game(ShowBase):
             self.tempActor.setY(currY - 0.5)
         elif msg == 'move_left':
             self.tempActor.setX(currX + 0.5)
-            #self.tempActor.setH(90)
+            #self.tempActor.setH(self.tempActor.getH() + 2)
         elif msg == 'move_right':
             self.tempActor.setX(currX - 0.5)
         elif msg == 'move_forward_right':
@@ -318,6 +343,17 @@ class Game(ShowBase):
     def update(self, task):
         # Get the amount of time since the last update
         dt = globalClock.getDt()
+        #base.disableMouse()
+
+
+        #self.rightCam.setY((self.tempActor.getY()+54))
+        #self.rightCam.setP(-45)
+        #self.rightCam.setPos(self.tempActor.getPos()+ Vec3(0,12,4))
+        #self.rightCam.setP(-12.5)
+        #self.tempActor.lookAtMe(self.rightCam)
+        #self.rightCam.setH(180)
+        #self.rightCam.lookAt(self.tempActor)
+
 
         self.selectionLight(self.tempActor2)
 
@@ -328,8 +364,11 @@ class Game(ShowBase):
         if self.keyMap["down"]:
             self.tempActor.setPos(self.tempActor.getPos() + Vec3(0, -5.0*dt, 0))
         if self.keyMap["left"]:
+            #self.tempActor.setR(self.tempActor.getR() + 2)
+            self.rightCam.setX(self.tempActor.getX()+5)
             self.tempActor.setPos(self.tempActor.getPos() + Vec3(-5.0*dt, 0, 0))
         if self.keyMap["right"]:
+            self.rightCam.setX(self.tempActor.getX()+5)
             self.tempActor.setPos(self.tempActor.getPos() + Vec3(5.0*dt, 0, 0))
         if self.keyMap["shoot"]:
             self.cameraFollow()

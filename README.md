@@ -41,19 +41,20 @@ Shape-boi aims to be an interactive VR-like social experience.  Built using pyth
 # TODO as of 04/09/2020:
 * Re-structure code to make more organized.
 * Document code more thoroughly.
-* Build and export final game objects using blender.
+* Build and export final game objects using blender. - progress being made 04/13/2020
 * Write classes to handle connecting to and managing twitter API calls.
 * Get working GLSL for portals.
 * Program portal functionality
 * Finger tracking for grabbing and moving game objects.
 * Working on different 'levels' / environments.
 * Finalize UI overlay and pack into a class or function.
-* Bind object to movement function instead of incoming UDP (x,y) values.
-* Collision detection.
+* Bind object to movement function instead of incoming UDP (x,y) values. - working 04/13/2020
+* Collision detection. - working 04/13/2020
 * Exit openCV when closing app.
 * Turn UDP handler into its own class.
 
 
 # NOTES
-https://github.com/09th/YABEE/blob/master/YABEE_HowTo.pdf
-https://www.youtube.com/playlist?list=PLcMfSPR_1EGipilDrE2AfIYG36JCwwM1l
+* https://github.com/09th/YABEE/blob/master/YABEE_HowTo.pdf
+* https://www.youtube.com/playlist?list=PLcMfSPR_1EGipilDrE2AfIYG36JCwwM1l
+* mapping scale from blender to panda3D should be one to one

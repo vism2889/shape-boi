@@ -26,6 +26,8 @@ import subprocess
 import socket
 import threading
 from direct.gui.DirectGui import DirectFrame
+from panda3d.core import TextNode
+from panda3d.core import OrthographicLens
 
 class Game(ShowBase):
     def __init__(self):
@@ -34,59 +36,67 @@ class Game(ShowBase):
         properties = WindowProperties()
         properties.setSize(1000, 750)
         self.win.requestProperties(properties)
-        base.setBackgroundColor(1,1,0)
+        base.setBackgroundColor(0.5,1,0.5)
         self.textObject = OnscreenText(text ='shape-boi', pos = (0.925,0.925), scale = 0.075)
 
         self.thread = threading.Thread(target=self.udpConnect)
         self.thread2 = threading.Thread(target=self.runColorTrack)
         self.connectButton = DirectButton(text=('Open Connection'),pos=(-0.3,0,-0.98), scale=0.090, command=self.openConnection, frameColor=(255,255,255,0.15))
         self.trackButton = DirectButton(text=('Color Track'),pos=(-1,0,-0.98), scale=0.090, command=self.thread2.start,frameColor=(255,255,255,0.15),state=0)
-
+        self.scoreUI = OnscreenText(text = "0",
+                                    pos = (-1.3, 0.825),
+                                    mayChange = True,
+                                    align = TextNode.ALeft)
 
 
         #loader.loadModel("Models/Misc/environment")
-        self.environment = loader.loadModel("MorgansModels/mirroredwalltest.x")
+        self.environment = loader.loadModel("MorgansModels/mapTest2")
         self.environment.reparentTo(render)
-        self.environment.getChild(0).setPos(0,50,-4)
-        self.environment.getChild(0).setH(90)
-        self.environment.getChild(0).setP(0)
+        self.environment.setPos(0,54,-3)
+        self.environment.setH(90)
+        self.environment.setP(0)
+        #self.environment.setZ(-10)
 
 
         self.tempActor = Actor("MorgansModels/shape-boi-grab-test-point_level2",
                                 {"walk":"MorgansModels/shape-boi-grab-test-point_level2-ArmatureAction",
                                  "lift":"MorgansModels/shape-boi-grab-test-point_level2-IcosphereAction"})
         self.tempActor.reparentTo(render)
-        self.tempActor.getChild(0).setH(180)
-        self.tempActor.getChild(0).setPos(0,54,-3)
-        self.tempActor.getChild(0).setScale(0.5,0.5,0.5)
+        self.tempActor.setH(0)
+        self.tempActor.setPos(0,54,-3)
+        self.tempActor.setScale(0.5,0.5,0.5)
         self.tempActor.loop("walk")
+        #player 1
+        self.cTrav = CollisionTraverser()
+        self.pusher = CollisionHandlerPusher()
+        colliderNode = CollisionNode("player")
+        # Add a collision-sphere centred on (0, 0, 0), and with a radius of 0.3
+        colliderNode.addSolid(CollisionSphere(0,0,0, 0.3))
+        collider = self.tempActor.attachNewNode(colliderNode)
+        collider.show()
+        base.pusher.addCollider(collider, self.tempActor)
+        # The traverser wants a collider, and a handler
+        # that responds to that collider's collisions
+        base.cTrav.addCollider(collider, self.pusher)
+        self.pusher.setHorizontal(True)
+        #collider.setZ(-3)
 
-        self.tempActor2 = Actor("MorgansModels/shape-boi-grab-test",
-                                {"walk":"MorgansModels/shape-boi-grab-test-ArmatureAction"})
-        self.tempActor2.reparentTo(render)
-        self.tempActor2.getChild(0).setH(180)
-        self.tempActor2.getChild(0).setPos(0,50,0)
-        self.tempActor2.getChild(0).setScale(0.5,0.5,0.5)
-        self.tempActor2.loop("walk")
+        self.myFriends = []
+        for i in range(4):
+            self.tempActor2 = Actor("MorgansModels/shape-boi-grab-test",
+                                    {"walk":"MorgansModels/shape-boi-grab-test-ArmatureAction"})
+            self.tempActor2.reparentTo(render)
+            self.tempActor2.setH(180)
+            self.tempActor2.setPos(0,50+(i*2),-3)
+            self.tempActor2.setScale(0.5,0.5,0.5)
+            self.tempActor2.loop("walk")
+            self.myFriends.append(self.tempActor2)
+        print(self.myFriends)
 
 
-        base.disableMouse()
-        self.camera.setPos(0, 0, 50)
-        # Tilt the camera down by setting its pitch.
-        self.camera.setP(-45)
-
-        self.leftCam = base.makeCamera(base.win, \
-                            displayRegion = (0.79, 0.99, 0.01, 0.21))
-        self.leftCam.setPos(0,0,50)
-        self.leftCam.setP(-45)
-
-        self.rightCam = base.makeCamera(base.win, \
-                              displayRegion = (0.79, 0.99, 0.23, 0.43))
-        self.rightCam.setZ(15)
-        self.rightCam.setY(54)
 
 
-        self.rightCam.setP(-45)
+        self.score = 0
 
 
         ambientLight = AmbientLight("ambient light")
@@ -131,81 +141,84 @@ class Game(ShowBase):
         self.accept("mouse1", self.updateKeyMap, ["shoot", True])
         self.accept("mouse1-up", self.updateKeyMap, ["shoot", False])
         self.updateTask = taskMgr.add(self.update, "update")
+        self.updateTask = taskMgr.add(self.updateScore, "updateScore")
 
 
-        #player 1
-        self.cTrav = CollisionTraverser()
-        self.pusher = CollisionHandlerPusher()
-        colliderNode = CollisionNode("player")
-        # Add a collision-sphere centred on (0, 0, 0), and with a radius of 0.3
-        colliderNode.addSolid(CollisionSphere(0, 54, -3, 0.3))
-        collider = self.tempActor.attachNewNode(colliderNode)
-        collider.show()
-        base.pusher.addCollider(collider, self.tempActor)
-        # The traverser wants a collider, and a handler
-        # that responds to that collider's collisions
-        base.cTrav.addCollider(collider, self.pusher)
-        self.pusher.setHorizontal(True)
-        #collider.setZ(-3)
-        #player 2
-        self.cTrav2 = CollisionTraverser()
-        self.pusher2 = CollisionHandlerPusher()
-        colliderNode = CollisionNode("player")
-        # Add a collision-sphere centred on (0, 0, 0), and with a radius of 0.3
-        colliderNode.addSolid(CollisionSphere(0, 50, 0, 0.3))
-        collider = self.tempActor2.attachNewNode(colliderNode)
-        collider.show()
-        base.pusher.addCollider(collider, self.tempActor2)
-        # The traverser wants a collider, and a handler
-        # that responds to that collider's collisions
-        base.cTrav.addCollider(collider, self.pusher2)
-        self.pusher2.setHorizontal(True)
+
 
         # walls
-        wallSolid = CollisionTube(-10.0, 32, -2, 10, 32, -2, 1.2)
+        wallSolid = CollisionTube(-7.0, 39, -2, 7, 39, -2, 1.2)
         #wallSolid = CollisionBox(Point3(-5,64,-4), Point3(2.5, 2.5, 0.25))
         wallNode = CollisionNode("wall")
         wallNode.addSolid(wallSolid)
         wall = render.attachNewNode(wallNode)
         #wall.setY(8.0)
-        #wall.show()
+        wall.show()
 
-        wallSolid = CollisionTube(-10.0, 51, -2, 10, 51, -2, 1.2)
+        wallSolid = CollisionTube(-2.0, 61, -2, 7, 61, -2, 1.2)
         wallNode = CollisionNode("wall")
         wallNode.addSolid(wallSolid)
         wall = render.attachNewNode(wallNode)
         wall.setY(8.0)
-        #wall.show()
+        wall.show()
 
-        wallSolid = CollisionTube(-8.0, 30, -2, -8, 55, -2, 1.2)
+        wallSolid = CollisionTube(-7.0, 30, -2, -7, 61, -2, 1.2)
         wallNode = CollisionNode("wall")
         wallNode.addSolid(wallSolid)
         wall = render.attachNewNode(wallNode)
         wall.setY(8.0)
-        #wall.show()
+        wall.show()
 
-        wallSolid = CollisionTube(8.0, 30, -2, 8, 55, -2, 1.2)
+        wallSolid = CollisionTube(7.0, 40, -2, 7, 61, -2, 1.2)
         wallNode = CollisionNode("wall")
         wallNode.addSolid(wallSolid)
         wall = render.attachNewNode(wallNode)
         wall.setY(8.0)
-        #wall.show()
+        wall.show()
 
-
+        '''
         # towers
         wallSolid = CollisionTube(-1, 37, -4, -1, 37, 3, 1)
         wallNode = CollisionNode("wall")
         wallNode.addSolid(wallSolid)
         wall = render.attachNewNode(wallNode)
         wall.setY(8.0)
-        #wall.show()
+        wall.show()
+
 
         wallSolid = CollisionTube(-4.5, 48, -4, -4.5, 48, 3, 1)
         wallNode = CollisionNode("wall")
         wallNode.addSolid(wallSolid)
         wall = render.attachNewNode(wallNode)
         wall.setY(8.0)
-        #wall.show()
+        wall.show()
+        '''
+
+        base.disableMouse()
+        self.camera.setPos(self.tempActor.getPos()+ Vec3(0,6,4))
+        #self.camera.setPos(0, 0, 50)
+        # Tilt the camera down by setting its pitch.
+        self.camera.setP(-12.5)
+
+        self.leftCam = base.makeCamera(self.win, \
+                            displayRegion = (0.79, 0.99, 0.01, 0.21), useCamera=None)
+        self.leftCam.setZ(50)
+        self.leftCam.setP(-45)
+
+        #self.score +=1
+        #self.rightCam = base.makeCamera(base.win, \
+                              #displayRegion = (0.79, 0.99, 0.23, 0.43))
+        #self.rightCam.setZ(15)
+        #self.rightCam.setY(54)
+
+
+        #self.rightCam.setP(-45)
+        #self.rightCam.
+
+        #lens = OrthographicLens()
+        #lens.setFilmSize(20, 15)  # Or whatever is appropriate for your scene
+        #self.rightCam.node().setLens(lens)
+        #lens.setFov(60)
 
     def circularMovement(self, object):
         # can call on an object to give it cirular motion
@@ -238,30 +251,32 @@ class Game(ShowBase):
         distanceToObject = vector2d.length()
 
         if distanceToObject < 0.6:
-            print(distanceToObject, "pickup")
+            #print(distanceToObject, "pickup")
             #self.selectionLight(self.tempActor2)
-            self.tempActor2.setX(self.tempActor.getX() + 0.25)
+            self.tempActor2.setX(self.tempActor.getX() + 0.0)
             self.tempActor2.setY(self.tempActor.getY() + 0.25)
             self.tempActor2.setZ(self.tempActor.getZ() + 0.25)
+            print(self.tempActor2.getY())
+            
 
     def setObjectDown(self):
         #self.tempActor2.setX(self.tempActor2.getX() + 0.25)
         #self.tempActor2.setY(self.tempActor2.getY() + 0.25)
         self.tempActor2.setZ(-3)
+
     def cameraFollow(self):
         base.disableMouse()
-        self.camera.setPos(self.tempActor.getPos()+ Vec3(0,12,4))
-        self.camera.setP(-12.5)
-        self.rightCam.setPos(self.tempActor.getPos()+ Vec3(0,12,4))
-        self.rightCam.setP(-12.5)
+
+        self.camera.setPos(self.tempActor.getPos()+ Vec3(0,10,60))
+        self.camera.setP(-90)
+        #self.rightCam.setPos(self.tempActor.getPos()+ Vec3(0,12,4))
+        #self.rightCam.setP(-12.5)
     def cameraSet(self):
         base.disableMouse()
-        self.camera.setPos(0, 0, 50)
+        self.camera.setPos(self.tempActor.getPos()+ Vec3(0,-100,20))
+        #self.camera.setPos(0, 0, 50)
         # Tilt the camera down by setting its pitch.
-        self.camera.setP(-45)
-        #self.rightCam.setX(self.tempActor.getX())
-        #self.rightCam.setY(self.tempActor.getY()+40)
-        #self.rightCam.setP(-45)
+        self.camera.setP(-12.5)
 
     def updateKeyMap(self, controlName, controlState):
         self.keyMap[controlName] = controlState
@@ -340,11 +355,25 @@ class Game(ShowBase):
 
         proc = subprocess.Popen('python3 colorTracker.py', shell=True)
 
+    def updateScore(self, task):
+        self.scoreUI.setText('0')
+
+        if (self.tempActor2.getX() > -37 and self.tempActor2.getX() < 0) \
+            and (self.tempActor2.getY() > 110 and self.tempActor2.getY() < 132):
+            print('scored')
+            self.score +=1
+            scoreString = str(self.score)
+            self.scoreUI.setText(scoreString)
+            return task.done
+        else:
+            return task.cont
+
+
     def update(self, task):
         # Get the amount of time since the last update
         dt = globalClock.getDt()
         #base.disableMouse()
-
+        #self.camera.setPos(self.tempActor.getPos()+Vec3(0,0,10))
 
         #self.rightCam.setY((self.tempActor.getY()+54))
         #self.rightCam.setP(-45)
@@ -360,17 +389,26 @@ class Game(ShowBase):
         # If any movement keys are pressed, use the above time
         # to calculate how far to move the character, and apply that.
         if self.keyMap["up"]:
+            #self.camera.setPos(self.tempActor.getPos())
+            self.tempActor.setH(0)
             self.tempActor.setPos(self.tempActor.getPos() + Vec3(0, 5.0*dt, 0))
+
         if self.keyMap["down"]:
+            self.tempActor.setH(180)
             self.tempActor.setPos(self.tempActor.getPos() + Vec3(0, -5.0*dt, 0))
         if self.keyMap["left"]:
+            self.tempActor.setH(90)
             #self.tempActor.setR(self.tempActor.getR() + 2)
-            self.rightCam.setX(self.tempActor.getX()+5)
+            #self.rightCam.setX(self.tempActor.getX()+5)
             self.tempActor.setPos(self.tempActor.getPos() + Vec3(-5.0*dt, 0, 0))
         if self.keyMap["right"]:
-            self.rightCam.setX(self.tempActor.getX()+5)
+            self.tempActor.setH(270)
+            #self.rightCam.setX(self.tempActor.getX()+5)
             self.tempActor.setPos(self.tempActor.getPos() + Vec3(5.0*dt, 0, 0))
         if self.keyMap["shoot"]:
+            #self.score += 1
+            #self.updateScore(self.score)
+
             self.cameraFollow()
             self.pickUpObject()
 
@@ -379,6 +417,7 @@ class Game(ShowBase):
             self.setObjectDown()
             self.cameraSet()
             #print ("Zap!")
+
         return task.cont
 
 game = Game()

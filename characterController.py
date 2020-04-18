@@ -30,6 +30,8 @@ from panda3d.core import TextNode
 from panda3d.core import OrthographicLens
 from panda3d.core import TransparencyAttrib
 from panda3d.core import NodePath
+
+from Environment import *
 #from panda3d.core import Font
 
 class Game(ShowBase):
@@ -53,15 +55,9 @@ class Game(ShowBase):
                                     mayChange = True,
                                     align = TextNode.ALeft)
 
-
+        env = Environment("MorgansModels/mapTest2")
         #loader.loadModel("Models/Misc/environment")
-        self.environment = loader.loadModel("MorgansModels/mapTest2")
-        self.environment.setPos(0,54,-3)
-        self.environment.setH(90)
-        self.environment.setP(0)
-        nodePath = NodePath(self.environment)
-        nodePath.setTransparency(TransparencyAttrib.MAlpha)
-        nodePath.reparentTo(render)
+
 
 
         #render.setShaderAuto()
@@ -162,35 +158,9 @@ class Game(ShowBase):
 
 
 
-        # walls
-        wallSolid = CollisionTube(-7.0, 39, -2, 7, 39, -2, 1.2)
-        #wallSolid = CollisionBox(Point3(-5,64,-4), Point3(2.5, 2.5, 0.25))
-        wallNode = CollisionNode("wall")
-        wallNode.addSolid(wallSolid)
-        wall = render.attachNewNode(wallNode)
-        #wall.setY(8.0)
-        wall.show()
+        env.walls()
 
-        wallSolid = CollisionTube(-2.0, 61, -2, 7, 61, -2, 1.2)
-        wallNode = CollisionNode("wall")
-        wallNode.addSolid(wallSolid)
-        wall = render.attachNewNode(wallNode)
-        wall.setY(8.0)
-        wall.show()
 
-        wallSolid = CollisionTube(-7.0, 30, -2, -7, 61, -2, 1.2)
-        wallNode = CollisionNode("wall")
-        wallNode.addSolid(wallSolid)
-        wall = render.attachNewNode(wallNode)
-        wall.setY(8.0)
-        wall.show()
-
-        wallSolid = CollisionTube(7.0, 40, -2, 7, 61, -2, 1.2)
-        wallNode = CollisionNode("wall")
-        wallNode.addSolid(wallSolid)
-        wall = render.attachNewNode(wallNode)
-        wall.setY(8.0)
-        wall.show()
 
         '''
         # towers
@@ -219,8 +189,8 @@ class Game(ShowBase):
         self.leftCam = self.makeCamera(self.win, \
                             displayRegion = (0.79, 0.99, 0.01, 0.21), useCamera=None)
         self.leftCam.setZ(50)
-        self.leftCam.setX(-37)
-        self.leftCam.setY(100)
+        self.leftCam.setX(-18)
+        self.leftCam.setY(118)
         self.leftCam.setP(-90)
         self.leftCam.reparentTo(render)
         #self.leftCam.setBin("fixed", 0)
@@ -361,7 +331,7 @@ class Game(ShowBase):
     def cameraFollow(self):
         base.disableMouse()
 
-        self.camera.setPos(self.tempActor.getPos()+ Vec3(0,10,60))
+        self.camera.setPos(self.tempActor.getPos()+ Vec3(0,0,60))
         self.camera.setP(-90)
         #self.rightCam.setPos(self.tempActor.getPos()+ Vec3(0,12,4))
         #self.rightCam.setP(-12.5)
@@ -485,20 +455,20 @@ class Game(ShowBase):
         if self.keyMap["up"]:
             #self.camera.setPos(self.tempActor.getPos())
             self.tempActor.setH(0)
-            self.tempActor.setPos(self.tempActor.getPos() + Vec3(0, 5.0*dt, 0))
+            self.tempActor.setPos(self.tempActor.getPos() + Vec3(0, 9.0*dt, 0))
 
         if self.keyMap["down"]:
             self.tempActor.setH(180)
-            self.tempActor.setPos(self.tempActor.getPos() + Vec3(0, -5.0*dt, 0))
+            self.tempActor.setPos(self.tempActor.getPos() + Vec3(0, -9.0*dt, 0))
         if self.keyMap["left"]:
             self.tempActor.setH(90)
             #self.tempActor.setR(self.tempActor.getR() + 2)
             #self.rightCam.setX(self.tempActor.getX()+5)
-            self.tempActor.setPos(self.tempActor.getPos() + Vec3(-5.0*dt, 0, 0))
+            self.tempActor.setPos(self.tempActor.getPos() + Vec3(-9.0*dt, 0, 0))
         if self.keyMap["right"]:
             self.tempActor.setH(270)
             #self.rightCam.setX(self.tempActor.getX()+5)
-            self.tempActor.setPos(self.tempActor.getPos() + Vec3(5.0*dt, 0, 0))
+            self.tempActor.setPos(self.tempActor.getPos() + Vec3(9.0*dt, 0, 0))
         if self.keyMap["shoot"]:
             #self.score += 1
             #self.updateScore(self.score)

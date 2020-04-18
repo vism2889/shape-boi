@@ -7,7 +7,7 @@
     FUNCTIONALITY:
     - Tracks Multiple colors and bounds objects of that color with a bounding box
     - Identifies center of given object with red dot
-    - Uses sockets to send centerX, and centerY or a given colored object over UDP
+    - Uses sockets to send centerX, and centerY of a given colored object over UDP
 
 '''
 # Citations:

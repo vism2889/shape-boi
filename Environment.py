@@ -1,3 +1,7 @@
+# class to set up environment models and most other static game objects
+# lighting, colliders that correspond to the map walls, more TBD
+
+
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import WindowProperties
 from panda3d.core import AmbientLight
@@ -25,6 +29,10 @@ from panda3d.core import NodePath
 
 class Environment():
     def __init__(self, model):
+        '''
+            Loads model for ground and walls of the environment and sets
+            position, and orientation.
+        '''
         self.environment = loader.loadModel(model)
         self.environment.setPos(0,54,-3)
         self.environment.setH(90)
@@ -35,7 +43,11 @@ class Environment():
         #nodePath.reparentTo(render)
         #return 42
 
-    def walls(self):
+    def wallColliders(self):
+        '''
+            Creates and postions colliders that correspond to the walls of
+            the game map.
+        '''
         # walls
         wallSolid = CollisionTube(-7.0, 39, -2, 7, 39, -2, 1.2)
         #wallSolid = CollisionBox(Point3(-5,64,-4), Point3(2.5, 2.5, 0.25))

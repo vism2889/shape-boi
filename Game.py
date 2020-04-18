@@ -58,7 +58,7 @@ class Game(ShowBase):
         env = Environment("MorgansModels/mapTest2")
         #loader.loadModel("Models/Misc/environment")
 
-
+        self.clientMsg = ''
 
         #render.setShaderAuto()
         #self.environment.setPos(0,54,-3)
@@ -153,12 +153,13 @@ class Game(ShowBase):
         self.accept("mouse1-up", self.updateKeyMap, ["shoot", False])
         self.updateTask = taskMgr.add(self.update, "update")
         self.updateTask2 = taskMgr.add(self.updateScore, "updateScore")
+        self.trackUpdate = taskMgr.add(self.handleMessage, 'handleMessage')
         #self.updateTask3 = taskMgr.add(self.udpUpdate)
 
 
 
 
-        env.walls()
+        env.wallColliders()
 
 
 
@@ -295,7 +296,7 @@ class Game(ShowBase):
         vector2d = vectorToObject.getXy()
         distanceToObject = vector2d.length()
         ambient = AmbientLight('ambient')
-        ambient.setColor((0.5, 0.75, 0.5, 1))
+        ambient.setColor((0.75, 0.75, 0.5, 1))
         ambientNP = selection.attachNewNode(ambient)
 
         if (distanceToObject < 0.65):
@@ -350,31 +351,35 @@ class Game(ShowBase):
         self.thread.start()
         self.trackButton['state'] = 1
 
-    def handleMessage(self, msg, currX, currY, ):
+    def handleMessage(self,task):
+        dt = globalClock.getDt()
+        msg = self.clientMsg
+        (currX, currY) = (self.tempActor.getX(), self.tempActor.getY())
         # models movement instead of mirroring tracked objects (x,y)
         if msg == 'move_forward':
-            self.tempActor.setY(currY + 0.5)
+            self.tempActor.setY(currY + 9*dt)
         elif msg == 'move_back':
-            self.tempActor.setY(currY - 0.5)
+            self.tempActor.setY(currY - 9*dt)
         elif msg == 'move_left':
-            self.tempActor.setX(currX + 0.5)
+            self.tempActor.setX(currX + 9*dt)
             #self.tempActor.setH(self.tempActor.getH() + 2)
         elif msg == 'move_right':
-            self.tempActor.setX(currX - 0.5)
+            self.tempActor.setX(currX - 9*dt)
         elif msg == 'move_forward_right':
-            self.tempActor.setX(currX - 0.5)
-            self.tempActor.setY(currY + 0.5)
+            self.tempActor.setX(currX - 9*dt)
+            self.tempActor.setY(currY + 9*dt)
         elif msg == 'move_forward_left':
-            self.tempActor.setX(currX + 0.5)
-            self.tempActor.setY(currY + 0.5)
+            self.tempActor.setX(currX + 9*dt)
+            self.tempActor.setY(currY + 9*dt)
         elif msg == 'move_back_right':
-            self.tempActor.setX(currX - 0.5)
-            self.tempActor.setY(currY - 0.5)
+            self.tempActor.setX(currX - 9*dt)
+            self.tempActor.setY(currY - 9*dt)
         elif msg == 'move_back_left':
-            self.tempActor.setX(currX + 0.5)
-            self.tempActor.setY(currY - 0.5)
+            self.tempActor.setX(currX + 9*dt)
+            self.tempActor.setY(currY - 9*dt)
         else:
             self.tempActor.setX(currX)
+        return task.cont
 
     def udpConnect(self):
         localIP     = "127.0.0.1"
@@ -390,15 +395,15 @@ class Game(ShowBase):
 
         print("UDP server up and listening")
         while(True):
-            (currX, currY) = (self.tempActor.getX(), self.tempActor.getY())
+
 
             bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
             message = bytesAddressPair[0]
             address = bytesAddressPair[1]
-            clientMsg = message.decode()
+            self.clientMsg = message.decode()
             clientIP  = "Client IP Address:{}".format(address)
-            print('server listened message from client: ', clientMsg)
-            self.handleMessage(clientMsg, currX, currY)
+            print('server listened message from client: ', self.clientMsg)
+            #self.handleMessage(clientMsg, currX, currY)
             '''
             print(clientMsg[:].split(',')[0])
             #print(clientIP)

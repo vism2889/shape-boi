@@ -28,6 +28,9 @@ import threading
 from direct.gui.DirectGui import DirectFrame
 from panda3d.core import TextNode
 from panda3d.core import OrthographicLens
+from panda3d.core import TransparencyAttrib
+from panda3d.core import NodePath
+#from panda3d.core import Font
 
 class Game(ShowBase):
     def __init__(self):
@@ -43,6 +46,8 @@ class Game(ShowBase):
         self.thread2 = threading.Thread(target=self.runColorTrack)
         self.connectButton = DirectButton(text=('Open Connection'),pos=(-0.3,0,-0.98), scale=0.090, command=self.openConnection, frameColor=(255,255,255,0.15))
         self.trackButton = DirectButton(text=('Color Track'),pos=(-1,0,-0.98), scale=0.090, command=self.thread2.start,frameColor=(255,255,255,0.15),state=0)
+        self.connectButton.hide()
+        self.trackButton.hide()
         self.scoreUI = OnscreenText(text = "0",
                                     pos = (-1.3, 0.825),
                                     mayChange = True,
@@ -51,10 +56,20 @@ class Game(ShowBase):
 
         #loader.loadModel("Models/Misc/environment")
         self.environment = loader.loadModel("MorgansModels/mapTest2")
-        self.environment.reparentTo(render)
         self.environment.setPos(0,54,-3)
         self.environment.setH(90)
         self.environment.setP(0)
+        nodePath = NodePath(self.environment)
+        nodePath.setTransparency(TransparencyAttrib.MAlpha)
+        nodePath.reparentTo(render)
+
+
+        #render.setShaderAuto()
+        #self.environment.setPos(0,54,-3)
+        #self.environment.setH(90)
+        #self.environment.setP(0)
+
+        #self.environment.setScale(2)
         #self.environment.setZ(-10)
 
 
@@ -110,7 +125,7 @@ class Game(ShowBase):
         # Turn it around by 45 degrees, and tilt it down by 45 degrees
         self.mainLightNodePath.setHpr(45, -45, 0)
         render.setLight(self.mainLightNodePath)
-        render.setShaderAuto()
+        #render.setShaderAuto()
         '''
         liftSpot = Spotlight('spotlight')
         liftSpot.setColor((0.75, 1, 1, 1))
@@ -141,7 +156,8 @@ class Game(ShowBase):
         self.accept("mouse1", self.updateKeyMap, ["shoot", True])
         self.accept("mouse1-up", self.updateKeyMap, ["shoot", False])
         self.updateTask = taskMgr.add(self.update, "update")
-        self.updateTask = taskMgr.add(self.updateScore, "updateScore")
+        self.updateTask2 = taskMgr.add(self.updateScore, "updateScore")
+        #self.updateTask3 = taskMgr.add(self.udpUpdate)
 
 
 
@@ -193,17 +209,23 @@ class Game(ShowBase):
         wall.setY(8.0)
         wall.show()
         '''
-
+        self.disableMouse()
         base.disableMouse()
         self.camera.setPos(self.tempActor.getPos()+ Vec3(0,6,4))
         #self.camera.setPos(0, 0, 50)
         # Tilt the camera down by setting its pitch.
         self.camera.setP(-12.5)
 
-        self.leftCam = base.makeCamera(self.win, \
+        self.leftCam = self.makeCamera(self.win, \
                             displayRegion = (0.79, 0.99, 0.01, 0.21), useCamera=None)
         self.leftCam.setZ(50)
-        self.leftCam.setP(-45)
+        self.leftCam.setX(-37)
+        self.leftCam.setY(100)
+        self.leftCam.setP(-90)
+        self.leftCam.reparentTo(render)
+        #self.leftCam.setBin("fixed", 0)
+        #self.leftCam.setDepthTest(False)
+        #self.leftCam.setDepthWrite(False)
 
         #self.score +=1
         #self.rightCam = base.makeCamera(base.win, \
@@ -219,6 +241,78 @@ class Game(ShowBase):
         #lens.setFilmSize(20, 15)  # Or whatever is appropriate for your scene
         #self.rightCam.node().setLens(lens)
         #lens.setFov(60)
+        #base.render.ls()
+
+        self.font = loader.loadFont("Fonts/Wbxkomik.ttf")
+        self.titleMenuBackdrop = DirectFrame(frameColor = (0, 0, 0, 1),
+                                             frameSize = (-1, 1, -1, 1),
+                                             parent = render2d)
+
+        self.titleMenu = DirectFrame(frameColor = (1, 1, 1, 0))
+
+        title = DirectLabel(text = "shape-boi",
+                            scale = 0.1,
+                            pos = (0, 0, 0.6),
+                            parent = self.titleMenu,
+                            relief = None,
+                            text_font = self.font,
+                            text_fg = (1, 1, 1, 1))
+        title2 = DirectLabel(text = "saves his",
+                             scale = 0.1,
+                             pos = (0, 0, 0.4),
+                             parent = self.titleMenu,
+                             relief = None,
+                             text_font = self.font,
+                             text_fg = (1, 1, 1, 1))
+        title3 = DirectLabel(text = "friends",
+                             scale = 0.125,
+                             pos = (0, 0, 0.2),
+                             parent = self.titleMenu,
+                             relief = None,
+                             text_font = self.font,
+                             text_fg = (1, 1, 1, 1))
+
+        self.startButton = DirectButton(text=('StartGame'),pos=(0.5,0,0), scale=0.090, command=self.startGame, frameColor=(255,255,255,0.5))
+        self.instructionsButton = DirectButton(text=('Instructions'),pos=(-0.5,0,0), scale=0.090, frameColor=(255,255,255,0.5))
+
+        '''
+        btn = DirectButton(text = "Start Game",
+                           command = self.startGame,
+                           pos = (0, 0, 0.2),
+                           parent = self.titleMenu,
+                           scale = 0.1,
+                           text_font = self.font,
+                           clickSound = loader.loadSfx("Sounds/UIClick.ogg"),
+                           frameTexture = buttonImages,
+                           frameSize = (-4, 4, -1, 1),
+                           text_scale = 0.75,
+                           relief = DGG.FLAT,
+                           text_pos = (0, -0.2))
+        btn.setTransparency(True)
+
+        btn = DirectButton(text = "Quit",
+                           command = self.quit,
+                           pos = (0, 0, -0.2),
+                           parent = self.titleMenu,
+                           scale = 0.1,
+                           text_font = self.font,
+                           clickSound = loader.loadSfx("Sounds/UIClick.ogg"),
+                           frameTexture = buttonImages,
+                           frameSize = (-4, 4, -1, 1),
+                           text_scale = 0.75,
+                           relief = DGG.FLAT,
+                           text_pos = (0, -0.2))
+        btn.setTransparency(True)
+        '''
+    def startGame(self):
+        self.titleMenu.hide()
+        self.titleMenuBackdrop.hide()
+        self.startButton.hide()
+        self.instructionsButton.hide()
+        if self.connectButton.isHidden():
+            self.connectButton.show()
+        if self.trackButton.isHidden():
+            self.trackButton.show()
 
     def circularMovement(self, object):
         # can call on an object to give it cirular motion
@@ -257,7 +351,7 @@ class Game(ShowBase):
             self.tempActor2.setY(self.tempActor.getY() + 0.25)
             self.tempActor2.setZ(self.tempActor.getZ() + 0.25)
             print(self.tempActor2.getY())
-            
+
 
     def setObjectDown(self):
         #self.tempActor2.setX(self.tempActor2.getX() + 0.25)
@@ -286,7 +380,7 @@ class Game(ShowBase):
         self.thread.start()
         self.trackButton['state'] = 1
 
-    def handleMessage(self, msg, currX, currY):
+    def handleMessage(self, msg, currX, currY, ):
         # models movement instead of mirroring tracked objects (x,y)
         if msg == 'move_forward':
             self.tempActor.setY(currY + 0.5)

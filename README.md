@@ -38,11 +38,16 @@ Shape-boi aims to be an interactive VR-like social experience.  Built using pyth
 
 - To exit the application, hit 'CTRL-C' in the interpreter you ran the pandas3DTest.py file from
 
+
+#### Special Thanks
+- Ian Eborn for his [tutorial](https://arsthaumaturgis.github.io/Panda3DTutorial.io/) for beginning game developers, and furthermore his thoughtful insight on panda3D's discourse page.
+- All other members of panda3D discourse page for their help and past contributions.
+- GrimFang's 'Panda3D Game Development' an excellent resource for anyone interested in creating games and other tools with python and Panda3D.
+
 # TODO as of 04/09/2020:
 * Re-structure code to make more organized.
 * Document code more thoroughly.
 * Build and export final game objects using blender. - progress being made 04/13/2020
-* Write classes to handle connecting to and managing twitter API calls.
 * Get working GLSL for portals.
 * Program portal functionality
 * Finger tracking for grabbing and moving game objects.
@@ -53,6 +58,12 @@ Shape-boi aims to be an interactive VR-like social experience.  Built using pyth
 * Exit openCV when closing app.
 * Turn UDP handler into its own class.
 
+# TODO 04/19/2020:
+* Fix scoring area and functionality
+* Fix selection light that stays on after object being set down
+* Close UPD connection on game exit
+* Close colorTracker on game exit
+* Game over screen
 
 # NOTES
 * https://github.com/09th/YABEE/blob/master/YABEE_HowTo.pdf

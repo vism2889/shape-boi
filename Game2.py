@@ -59,6 +59,7 @@ class Game(ShowBase):
         #loader.loadModel("Models/Misc/environment")
 
         self.clientMsg = ''
+        self.carrying = False
 
         #render.setShaderAuto()
         #self.environment.setPos(0,54,-3)
@@ -88,7 +89,7 @@ class Game(ShowBase):
         self.pusher = CollisionHandlerPusher()
         colliderNode = CollisionNode("player")
         # Add a collision-sphere centred on (0, 0, 0), and with a radius of 0.3
-        colliderNode.addSolid(CollisionSphere(0,0,0, 0.8))
+        colliderNode.addSolid(CollisionSphere(0,0,0, 0.7))
         collider = self.tempActor.attachNewNode(colliderNode)
         collider.show()
         base.pusher.addCollider(collider, self.tempActor)
@@ -97,14 +98,15 @@ class Game(ShowBase):
         base.cTrav.addCollider(collider, self.pusher)
         self.pusher.setHorizontal(True)
         #collider.setZ(-3)
-
+        self.savedFriends = []
         self.myFriends = []
         for i in range(4):
+            # this loop adds friends
             self.tempActor2 = Actor("MorgansModels/shape-boi-grab-test",
                                     {"walk":"MorgansModels/shape-boi-grab-test-ArmatureAction"})
             self.tempActor2.reparentTo(render)
             self.tempActor2.setH(180)
-            self.tempActor2.setPos(0,50+(i*2),-3)
+            self.tempActor2.setPos(0+5*i,50+(i*4),-3)
             self.tempActor2.setScale(0.5,0.5,0.5)
             self.tempActor2.loop("walk")
             self.myFriends.append(self.tempActor2)
@@ -113,7 +115,7 @@ class Game(ShowBase):
 
 
 
-        self.score = 0
+        self.score = len(self.savedFriends)
 
 
         ambientLight = AmbientLight("ambient light")
@@ -264,7 +266,7 @@ class Game(ShowBase):
         ambientNP = selection.attachNewNode(ambient)
 
         if (distanceToObject < 0.65):
-            print(distanceToObject, "selectionLight")
+            #print(distanceToObject, "selectionLight")
 
             selection.setLightOff()
             selection.setLight(ambientNP)
@@ -275,24 +277,26 @@ class Game(ShowBase):
 
 
     def pickUpObject(self):
-        #for object in self.myFriends:
-        vectorToObject = self.tempActor2.getPos()-self.tempActor.getPos()
-        vector2d = vectorToObject.getXy()
-        distanceToObject = vector2d.length()
+        for object in self.myFriends:
+            vectorToObject = object.getPos()-self.tempActor.getPos()
+            vector2d = vectorToObject.getXy()
+            distanceToObject = vector2d.length()
 
-        if distanceToObject < 0.6:
+            if distanceToObject < 0.6 and self.carrying == False:
             #print(distanceToObject, "pickup")
             #self.selectionLight(self.tempActor2)
-            self.tempActor2.setX(self.tempActor.getX() + 0.0)
-            self.tempActor2.setY(self.tempActor.getY() + 0.25)
-            self.tempActor2.setZ(self.tempActor.getZ() + 0.25)
-            print(self.tempActor2.getY())
+                #self.carrying = True
+                object.setX(self.tempActor.getX() + 0.0)
+                object.setY(self.tempActor.getY() + 0.25)
+                object.setZ(self.tempActor.getZ() + 0.25)
+                #print(object.getY())
 
 
     def setObjectDown(self):
         #self.tempActor2.setX(self.tempActor2.getX() + 0.25)
         #self.tempActor2.setY(self.tempActor2.getY() + 0.25)
         self.tempActor2.setZ(-3)
+        self.carrying = False
 
     def cameraFollow(self):
         base.disableMouse()
@@ -383,24 +387,32 @@ class Game(ShowBase):
         proc = subprocess.Popen('python3 colorTracker.py', shell=True)
 
     def updateScore(self, task):
-        self.scoreUI.setText('0')
-
-        if (self.tempActor2.getX() > -37 and self.tempActor2.getX() < 0) \
-            and (self.tempActor2.getY() > 110 and self.tempActor2.getY() < 132):
-            print('scored')
-            self.score +=1
-            scoreString = str(self.score)
-            self.scoreUI.setText(scoreString)
-            return task.done
-        else:
+        #self.scoreUI.setText('0')
+        if len(self.myFriends) > 0:
+            for i in range(len(self.myFriends)-1):
+                if (self.myFriends[i].getX() > -37 and self.myFriends[i].getX() < 0) \
+                    and (self.myFriends[i].getY() > 110 and self.myFriends[i].getY() < 132):
+                    print('scored')
+                    self.savedFriends.append(self.myFriends[i])
+                    self.score = len(self.savedFriends)
+                    scoreString = str(self.score)
+                    self.scoreUI.setText(scoreString)
+                    self.myFriends.remove(self.myFriends[i])
             return task.cont
+        else:
+            return task.done
+
+
+
+
+
 
 
     def update(self, task):
         # Get the amount of time since the last update
         dt = globalClock.getDt()
-
-        self.selectionLight(self.tempActor2)
+        for i in range(len(self.myFriends)-1):
+            self.selectionLight(self.myFriends[i])
 
         # If any movement keys are pressed, use the above time
         # to calculate how far to move the character, and apply that.
@@ -435,6 +447,9 @@ class Game(ShowBase):
             #print ("Zap!")
 
         return task.cont
+
+
+
 
 game = Game()
 game.run()

@@ -61,7 +61,7 @@ class Game(ShowBase):
                                     pos = (-1.3, 0.825),
                                     mayChange = True,
                                     align = TextNode.ALeft)
-        self.countDownUI = OnscreenText(text = "1 : 0",
+        self.countDownUI = OnscreenText(text = "",
                                     pos = (0.0, 0.925),
                                     mayChange = True,
                                     align = TextNode.ALeft)
@@ -72,7 +72,7 @@ class Game(ShowBase):
 
         self.clientMsg = ''
         self.carrying = False
-        self.countDownTime = 300 # in seconds
+        self.countDownTime = 10 # in seconds
 
         #render.setShaderAuto()
         #self.environment.setPos(0,54,-3)
@@ -406,20 +406,20 @@ class Game(ShowBase):
         self.connectButton.hide()
         self.trackButton.hide()
         self.font = loader.loadFont("Fonts/Replicant.ttf")
-        self.titleMenuBackdrop = DirectFrame(frameColor = (0, 0, 0, 1),
-                                             frameSize = (-1, 1, -1, 1),
-                                             parent = render2d)
+        #self.titleMenuBackdrop = DirectFrame(frameColor = (0, 0, 0, 1),
+                                             #frameSize = (-1, 1, -1, 1),
+                                             #parent = render2d)
 
         self.titleMenu = DirectFrame(frameColor = (1, 1, 1, 0))
 
-        title = DirectLabel(text = "YOU WON!",
+        title = DirectLabel(text = "You Won!",
                             scale = 0.1,
                             pos = (0, 0, 0.6),
                             parent = self.titleMenu,
                             relief = None,
                             text_font = self.font,
                             text_fg = (1, 1, 1, 1))
-        title2 = DirectLabel(text = "Thanks for helping shape-boi!",
+        title2 = DirectLabel(text = "Thanks for helping SHAPE BOI!",
                              scale = 0.1,
                              pos = (0, 0, 0.4),
                              parent = self.titleMenu,
@@ -504,9 +504,13 @@ class Game(ShowBase):
 
 
     def clockUpdate(self, task):
+        if self.score == 4:
+            return task.done
         if self.countDownTime >= 0:
             minutes = self.countDownTime // 60
             seconds = self.countDownTime % 60
+            if seconds < 10:
+                seconds = "0"+ str(seconds)
             self.countDownUI.setText(str(minutes)+ ' : ' + str(seconds))
             self.countDownTime -=1
             return task.again

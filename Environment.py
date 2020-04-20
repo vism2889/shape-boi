@@ -65,11 +65,17 @@ class Environment():
         self.tree2.setScale(3)
         self.tree2.reparentTo(render)
 
-        self.tree3 = loader.loadModel("MorgansModels/tree_two")
+        self.tree3 = loader.loadModel("MorgansModels/tree_three")
         self.tree3.setPos(30,75,-3)
         self.tree3.setScale(3)
         self.tree3.setH(90)
         self.tree3.reparentTo(render)
+
+        self.seaShell = loader.loadModel("MorgansModels/seashell")
+        self.seaShell.setPos(33,120,-3)
+        self.seaShell.setScale(3)
+        self.seaShell.setH(90)
+        self.seaShell.reparentTo(render)
 
 
     def wallColliders(self):

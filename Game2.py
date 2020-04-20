@@ -50,8 +50,12 @@ class Game(ShowBase):
         self.trackButton = DirectButton(text=('Color Track'),pos=(-1,0,-0.98), scale=0.090, command=self.thread2.start,frameColor=(255,255,255,0.15),state=0)
         self.connectButton.hide()
         self.trackButton.hide()
-        self.scoreUI = OnscreenText(text = "0",
+        self.scoreUI = OnscreenText(text = "Score: 0",
                                     pos = (-1.3, 0.825),
+                                    mayChange = True,
+                                    align = TextNode.ALeft)
+        self.countDownUI = OnscreenText(text = "1 : 0",
+                                    pos = (0.0, 0.925),
                                     mayChange = True,
                                     align = TextNode.ALeft)
 
@@ -60,6 +64,7 @@ class Game(ShowBase):
 
         self.clientMsg = ''
         self.carrying = False
+        self.countDownTime = 10 # in seconds
 
         #render.setShaderAuto()
         #self.environment.setPos(0,54,-3)
@@ -110,7 +115,7 @@ class Game(ShowBase):
             self.tempActor2.setScale(0.5,0.5,0.5)
             self.tempActor2.loop("walk")
             self.myFriends.append(self.tempActor2)
-        print(self.myFriends)
+        print(len(self.myFriends))
 
 
 
@@ -241,6 +246,7 @@ class Game(ShowBase):
         self.startButton = DirectButton(text=('StartGame'),pos=(0.5,0,0), scale=0.090, command=self.startGame, frameColor=(255,255,255,0.5))
         self.instructionsButton = DirectButton(text=('Instructions'),pos=(-0.5,0,0), scale=0.090, frameColor=(255,255,255,0.5))
 
+
     def startGame(self):
         self.titleMenu.hide()
         self.titleMenuBackdrop.hide()
@@ -250,6 +256,7 @@ class Game(ShowBase):
             self.connectButton.show()
         if self.trackButton.isHidden():
             self.trackButton.show()
+        self.timerUpdate = taskMgr.doMethodLater(1.0, self.clockUpdate, 'handleMessage')
 
     def circularMovement(self, object):
         # can call on an object to give it cirular motion
@@ -386,65 +393,147 @@ class Game(ShowBase):
 
         proc = subprocess.Popen('python3 colorTracker.py', shell=True)
 
+    def gameOverWin(self):
+        # UI that is displayed when a win occurs
+        self.connectButton.hide()
+        self.trackButton.hide()
+        self.font = loader.loadFont("Fonts/Wbxkomik.ttf")
+        self.titleMenuBackdrop = DirectFrame(frameColor = (0, 0, 0, 1),
+                                             frameSize = (-1, 1, -1, 1),
+                                             parent = render2d)
+
+        self.titleMenu = DirectFrame(frameColor = (1, 1, 1, 0))
+
+        title = DirectLabel(text = "YOU WON!",
+                            scale = 0.1,
+                            pos = (0, 0, 0.6),
+                            parent = self.titleMenu,
+                            relief = None,
+                            text_font = self.font,
+                            text_fg = (1, 1, 1, 1))
+        title2 = DirectLabel(text = "Thanks for helping shape-boi!",
+                             scale = 0.1,
+                             pos = (0, 0, 0.4),
+                             parent = self.titleMenu,
+                             relief = None,
+                             text_font = self.font,
+                             text_fg = (1, 1, 1, 1))
+        title3 = DirectLabel(text = "Play Again?",
+                             scale = 0.125,
+                             pos = (0, 0, 0.2),
+                             parent = self.titleMenu,
+                             relief = None,
+                             text_font = self.font,
+                             text_fg = (1, 1, 1, 1))
+
+        self.restartButton = DirectButton(text=('Play Again'),pos=(0.5,0,0), scale=0.090, frameColor=(255,255,255,0.5))
+        self.quitButton = DirectButton(text=('Quit Game'),pos=(-0.5,0,0), scale=0.090, frameColor=(255,255,255,0.5))
+        #self.titleMenuBackdrop.hide()
+        #self.titleMenu.hide()
+        #self.restartButton.hide()
+        #self.quitButton.hide()
+    def gameOverLose(self):
+        # UI that is displayed when a win occurs
+        self.connectButton.hide()
+        self.trackButton.hide()
+        self.font = loader.loadFont("Fonts/Wbxkomik.ttf")
+        self.titleMenuBackdrop = DirectFrame(frameColor = (0, 0, 0, 1),
+                                             frameSize = (-1, 1, -1, 1),
+                                             parent = render2d)
+
+        self.titleMenu = DirectFrame(frameColor = (1, 1, 1, 0))
+
+        title = DirectLabel(text = "GAME OVER",
+                            scale = 0.1,
+                            pos = (0, 0, 0.6),
+                            parent = self.titleMenu,
+                            relief = None,
+                            text_font = self.font,
+                            text_fg = (1, 1, 1, 1))
+        title2 = DirectLabel(text = str(len(self.myFriends)) + " of shape-bois friends are still sad",
+                             scale = 0.1,
+                             pos = (0, 0, 0.4),
+                             parent = self.titleMenu,
+                             relief = None,
+                             text_font = self.font,
+                             text_fg = (1, 1, 1, 1))
+        title3 = DirectLabel(text = "Play Again?",
+                             scale = 0.125,
+                             pos = (0, 0, 0.2),
+                             parent = self.titleMenu,
+                             relief = None,
+                             text_font = self.font,
+                             text_fg = (1, 1, 1, 1))
+
+        self.restartButton = DirectButton(text=('Play Again'),pos=(0.5,0,0), scale=0.090, frameColor=(255,255,255,0.5))
+        self.quitButton = DirectButton(text=('Quit Game'),pos=(-0.5,0,0), scale=0.090, frameColor=(255,255,255,0.5))
+        #self.titleMenuBackdrop.hide()
+        #self.titleMenu.hide()
+        #self.restartButton.hide()
+        #self.quitButton.hide()
+
     def updateScore(self, task):
         #self.scoreUI.setText('0')
+        if self.countDownTime <= 0:
+            self.gameOverLose()
+            return task.done
         if len(self.myFriends) > 0:
-            for i in range(len(self.myFriends)-1):
-                if (self.myFriends[i].getX() > -37 and self.myFriends[i].getX() < 0) \
-                    and (self.myFriends[i].getY() > 110 and self.myFriends[i].getY() < 132):
+            for friend in self.myFriends:
+                if (friend.getX() > -37 and friend.getX() < 0) \
+                    and (friend.getY() > 110 and friend.getY() < 132):
                     print('scored')
-                    self.savedFriends.append(self.myFriends[i])
+                    self.savedFriends.append(friend)
                     self.score = len(self.savedFriends)
                     scoreString = str(self.score)
-                    self.scoreUI.setText(scoreString)
-                    self.myFriends.remove(self.myFriends[i])
+                    self.scoreUI.setText('Score: ' +scoreString)
+                    self.myFriends.remove(friend)
             return task.cont
+        elif self.score == 4:
+            self.gameOverWin()
         else:
             return task.done
 
 
 
-
+    def clockUpdate(self, task):
+        if self.countDownTime >= 0:
+            minutes = self.countDownTime // 60
+            seconds = self.countDownTime % 60
+            self.countDownUI.setText(str(minutes)+ ' : ' + str(seconds))
+            self.countDownTime -=1
+            return task.again
+        else:
+            return task.done
 
 
 
     def update(self, task):
         # Get the amount of time since the last update
         dt = globalClock.getDt()
-        for i in range(len(self.myFriends)-1):
+        # iterates over friends list to check if they need a selection light applied
+        for i in range(len(self.myFriends)):
             self.selectionLight(self.myFriends[i])
 
         # If any movement keys are pressed, use the above time
         # to calculate how far to move the character, and apply that.
         if self.keyMap["up"]:
-            #self.camera.setPos(self.tempActor.getPos())
-            self.tempActor.setH(0)
+            self.tempActor.setH(0) # changes to face direction of movement
             self.tempActor.setPos(self.tempActor.getPos() + Vec3(0, 9.0*dt, 0))
-
         if self.keyMap["down"]:
-            self.tempActor.setH(180)
+            self.tempActor.setH(180) # changes to face direction of movement
             self.tempActor.setPos(self.tempActor.getPos() + Vec3(0, -9.0*dt, 0))
         if self.keyMap["left"]:
-            self.tempActor.setH(90)
-            #self.tempActor.setR(self.tempActor.getR() + 2)
-            #self.rightCam.setX(self.tempActor.getX()+5)
+            self.tempActor.setH(90) # changes to face direction of movement
             self.tempActor.setPos(self.tempActor.getPos() + Vec3(-9.0*dt, 0, 0))
         if self.keyMap["right"]:
-            self.tempActor.setH(270)
-            #self.rightCam.setX(self.tempActor.getX()+5)
+            self.tempActor.setH(270) # changes to face direction of movement
             self.tempActor.setPos(self.tempActor.getPos() + Vec3(9.0*dt, 0, 0))
         if self.keyMap["shoot"]:
-            #self.score += 1
-            #self.updateScore(self.score)
-
             self.cameraFollow()
             self.pickUpObject()
-
-            #print ("Zap!")
         if self.keyMap["shoot"] == False:
             self.setObjectDown()
             self.cameraSet()
-            #print ("Zap!")
 
         return task.cont
 

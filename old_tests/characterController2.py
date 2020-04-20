@@ -1,3 +1,13 @@
+###############################################################################
+# Name: Morgan Visnesky
+# AndewID: mvisnesk
+# FileName: characterController2.py
+###############################################################################
+
+
+
+
+
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import WindowProperties
 from direct.actor.Actor import Actor

@@ -1,3 +1,10 @@
+###############################################################################
+# Name: Morgan Visnesky
+# AndewID: mvisnesk
+# FileName: test.py
+###############################################################################
+
+
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import WindowProperties
 from panda3d.core import AmbientLight

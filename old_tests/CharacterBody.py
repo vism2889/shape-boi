@@ -1,3 +1,10 @@
+###############################################################################
+# Name: Morgan Visnesky
+# AndewID: mvisnesk
+# FileName: CharacterBody.py
+###############################################################################
+
+
 # class for character body
 
 # purpose is to be able to create your own character from given preset shapes

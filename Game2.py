@@ -1,8 +1,15 @@
+###############################################################################
+# Name: Morgan Visnesky
+# AndewID: mvisnesk
+# FileName: Game2.py
+###############################################################################
+
+# CURRENT WORKING VERSION OF GAME
 ## working character controller with collisions
 # citation:
 # https://docs.panda3d.org/1.10/python/programming/collision-detection/collision-solids
 # https://arsthaumaturgis.github.io/Panda3DTutorial.io/tutorial/tut_lesson06.html
-
+# font: http://webpagepublicity.com/free-fonts-y.html#Free%20Fonts year 2000 replicant
 
 
 
@@ -60,11 +67,12 @@ class Game(ShowBase):
                                     align = TextNode.ALeft)
 
         env = Environment("MorgansModels/mapTest2")
+        env.plants()
         #loader.loadModel("Models/Misc/environment")
 
         self.clientMsg = ''
         self.carrying = False
-        self.countDownTime = 10 # in seconds
+        self.countDownTime = 300 # in seconds
 
         #render.setShaderAuto()
         #self.environment.setPos(0,54,-3)
@@ -214,7 +222,7 @@ class Game(ShowBase):
         self.leftCam.reparentTo(render)
 
     def startMenu(self):
-        self.font = loader.loadFont("Fonts/Wbxkomik.ttf")
+        self.font = loader.loadFont("Fonts/Replicant.ttf")
         self.titleMenuBackdrop = DirectFrame(frameColor = (0, 0, 0, 1),
                                              frameSize = (-1, 1, -1, 1),
                                              parent = render2d)
@@ -397,7 +405,7 @@ class Game(ShowBase):
         # UI that is displayed when a win occurs
         self.connectButton.hide()
         self.trackButton.hide()
-        self.font = loader.loadFont("Fonts/Wbxkomik.ttf")
+        self.font = loader.loadFont("Fonts/Replicant.ttf")
         self.titleMenuBackdrop = DirectFrame(frameColor = (0, 0, 0, 1),
                                              frameSize = (-1, 1, -1, 1),
                                              parent = render2d)
@@ -436,7 +444,7 @@ class Game(ShowBase):
         # UI that is displayed when a win occurs
         self.connectButton.hide()
         self.trackButton.hide()
-        self.font = loader.loadFont("Fonts/Wbxkomik.ttf")
+        self.font = loader.loadFont("Fonts/Replicant.ttf")
         self.titleMenuBackdrop = DirectFrame(frameColor = (0, 0, 0, 1),
                                              frameSize = (-1, 1, -1, 1),
                                              parent = render2d)
@@ -450,7 +458,7 @@ class Game(ShowBase):
                             relief = None,
                             text_font = self.font,
                             text_fg = (1, 1, 1, 1))
-        title2 = DirectLabel(text = str(len(self.myFriends)) + " of shape-bois friends are still sad",
+        title2 = DirectLabel(text = str(len(self.myFriends)) + " friends are still sad",
                              scale = 0.1,
                              pos = (0, 0, 0.4),
                              parent = self.titleMenu,

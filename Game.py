@@ -1,3 +1,13 @@
+###############################################################################
+# Name: Morgan Visnesky
+# AndewID: mvisnesk
+# FileName: Game.py
+###############################################################################
+
+# OLD WORKING VERSION OF GAME
+
+
+
 ## working character controller with collisions
 # citation:
 # https://docs.panda3d.org/1.10/python/programming/collision-detection/collision-solids

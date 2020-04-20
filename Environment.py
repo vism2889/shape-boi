@@ -1,3 +1,10 @@
+###############################################################################
+# Name: Morgan Visnesky
+# AndewID: mvisnesk
+# FileName: Environment.py
+###############################################################################
+
+
 # class to set up environment models and most other static game objects
 # lighting, colliders that correspond to the map walls, more TBD
 
@@ -42,6 +49,28 @@ class Environment():
         #nodePath.setTransparency(TransparencyAttrib.MAlpha)
         #nodePath.reparentTo(render)
         #return 42
+
+    def plants(self):
+        '''
+            Creates trees and other plant-like game objects.
+        '''
+        self.tree1 = loader.loadModel("MorgansModels/tree_one")
+        self.tree1.setPos(-20,54,-3)
+        self.tree1.setScale(3)
+        self.tree1.reparentTo(render)
+
+
+        self.tree2 = loader.loadModel("MorgansModels/tree_two")
+        self.tree2.setPos(-30,20,-3)
+        self.tree2.setScale(3)
+        self.tree2.reparentTo(render)
+
+        self.tree3 = loader.loadModel("MorgansModels/tree_two")
+        self.tree3.setPos(30,75,-3)
+        self.tree3.setScale(3)
+        self.tree3.setH(90)
+        self.tree3.reparentTo(render)
+
 
     def wallColliders(self):
         '''

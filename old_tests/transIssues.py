@@ -1,3 +1,11 @@
+###############################################################################
+# Name: Morgan Visnesky
+# AndewID: mvisnesk
+# FileName: transIssues.py
+###############################################################################
+
+# for debugging translucent objects 
+
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import WindowProperties
 from panda3d.core import AmbientLight

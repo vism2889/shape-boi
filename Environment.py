@@ -71,11 +71,164 @@ class Environment():
         self.tree3.setH(90)
         self.tree3.reparentTo(render)
 
+        self.tree4 = loader.loadModel("MorgansModels/tree_three")
+        self.tree4.setPos(-35,100,-3)
+        self.tree4.setScale(3)
+        self.tree4.setH(90)
+        self.tree4.reparentTo(render)
+
         self.seaShell = loader.loadModel("MorgansModels/seashell")
         self.seaShell.setPos(33,120,-3)
         self.seaShell.setScale(3)
         self.seaShell.setH(90)
         self.seaShell.reparentTo(render)
+
+        self.shrub = loader.loadModel("MorgansModels/shrub")
+        self.shrub.setPos(35,127,-3)
+        self.shrub.setScale(2)
+        self.shrub.setH(90)
+        self.shrub.reparentTo(render)
+
+        self.shrub = loader.loadModel("MorgansModels/shrub2")
+        self.shrub.setPos(35,114,-3)
+        self.shrub.setScale(2)
+        self.shrub.setH(90)
+        self.shrub.reparentTo(render)
+
+        # shrub rows
+
+        for i in range(8):
+            model = ''
+            if i % 2 == 0:
+                model = "MorgansModels/shrub"
+            else:
+                model = "MorgansModels/shrub2"
+            self.shrub = loader.loadModel(model)
+            self.shrub.setPos(-35+i*5,105,-3)
+            self.shrub.setScale(2)
+            self.shrub.setH(90+i*30+15)
+            self.shrub.reparentTo(render)
+
+        for i in range(7):
+            model = ''
+            if i % 2 == 0:
+                model = "MorgansModels/shrub"
+            else:
+                model = "MorgansModels/shrub2"
+            self.shrub = loader.loadModel(model)
+            self.shrub.setPos(-35+i*5,130,-3)
+            self.shrub.setScale(2)
+            self.shrub.setH(90+i*30+15)
+            self.shrub.reparentTo(render)
+
+        for i in range(7):
+            model = ''
+            if i % 2 == 0:
+                model = "MorgansModels/shrub"
+            else:
+                model = "MorgansModels/shrub2"
+            self.shrub = loader.loadModel(model)
+            self.shrub.setPos(-35+i*5,112,-3)
+            self.shrub.setScale(2)
+            self.shrub.setH(90+i*30+15)
+            self.shrub.reparentTo(render)
+        '''
+        self.shrub = loader.loadModel("MorgansModels/shrub2")
+        self.shrub.setPos(-35,105,-3)
+        self.shrub.setScale(2)
+        self.shrub.setH(90)
+        self.shrub.reparentTo(render)
+
+        self.shrub = loader.loadModel("MorgansModels/shrub")
+        self.shrub.setPos(-30,105,-3)
+        self.shrub.setScale(2)
+        self.shrub.setH(180)
+        self.shrub.reparentTo(render)
+
+        self.shrub = loader.loadModel("MorgansModels/shrub2")
+        self.shrub.setPos(-25,105,-3)
+        self.shrub.setScale(2)
+        self.shrub.setH(270)
+        self.shrub.reparentTo(render)
+
+        self.shrub = loader.loadModel("MorgansModels/shrub")
+        self.shrub.setPos(-20,105,-3)
+        self.shrub.setScale(2)
+        self.shrub.setH(90)
+        self.shrub.reparentTo(render)
+
+        self.shrub = loader.loadModel("MorgansModels/shrub2")
+        self.shrub.setPos(-15,105,-3)
+        self.shrub.setScale(2)
+        self.shrub.setH(160)
+        self.shrub.reparentTo(render)
+
+        self.shrub = loader.loadModel("MorgansModels/shrub")
+        self.shrub.setPos(-10,105,-3)
+        self.shrub.setScale(2)
+        self.shrub.setH(240)
+        self.shrub.reparentTo(render)
+        '''
+        for i in range(18):
+            model = ''
+            if i % 2 == 0:
+                model = "MorgansModels/shrub"
+            else:
+                model = "MorgansModels/shrub2"
+            self.shrub = loader.loadModel(model)
+            self.shrub.setPos(-35,95-i*5,-3)
+            self.shrub.setScale(2)
+            self.shrub.setH(90+i*30)
+            self.shrub.reparentTo(render)
+
+        for i in range(7):
+            model = ''
+            if i % 2 == 0:
+                model = "MorgansModels/shrub"
+            else:
+                model = "MorgansModels/shrub2"
+            self.shrub = loader.loadModel(model)
+            self.shrub.setPos(-10,70-i*5,-3)
+            self.shrub.setScale(2)
+            self.shrub.setH(90+i*30)
+            self.shrub.reparentTo(render)
+
+        for i in range(4):
+            model = ''
+            if i % 2 == 0:
+                model = "MorgansModels/shrub"
+            else:
+                model = "MorgansModels/shrub2"
+            self.shrub = loader.loadModel(model)
+            self.shrub.setPos(-10+i*5,35,-3)
+            self.shrub.setScale(2)
+            self.shrub.setH(90+i*30)
+            self.shrub.reparentTo(render)
+
+
+        # grass
+        self.shrub = loader.loadModel("MorgansModels/grass1")
+        self.shrub.setPos(20,75,-3)
+        self.shrub.setScale(2)
+        self.shrub.setH(90)
+        self.shrub.reparentTo(render)
+        self.shrub = loader.loadModel("MorgansModels/grass1")
+        self.shrub.setPos(20.5,75,-3)
+        self.shrub.setScale(1.5)
+        self.shrub.setH(180)
+        self.shrub.reparentTo(render)
+
+        # grass by big tree
+        self.shrub = loader.loadModel("MorgansModels/grass1")
+        self.shrub.setPos(30,73.5,-3)
+        self.shrub.setScale(2)
+        self.shrub.setH(90)
+        self.shrub.reparentTo(render)
+        self.shrub = loader.loadModel("MorgansModels/grass1")
+        self.shrub.setPos(30.5,73.5,-3)
+        self.shrub.setScale(1.5)
+        self.shrub.setH(180)
+        self.shrub.reparentTo(render)
 
 
     def wallColliders(self):

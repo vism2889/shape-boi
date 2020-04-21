@@ -72,7 +72,7 @@ class Game(ShowBase):
 
         self.clientMsg = ''
         self.carrying = False
-        self.countDownTime = 10 # in seconds
+        self.countDownTime = 60 # in seconds
 
         #render.setShaderAuto()
         #self.environment.setPos(0,54,-3)

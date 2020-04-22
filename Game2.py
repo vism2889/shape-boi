@@ -49,22 +49,20 @@ class Game(ShowBase):
         properties.setSize(1000, 750)
         self.win.requestProperties(properties)
         base.setBackgroundColor(0.5,1,0.5)
-        self.textObject = OnscreenText(text ='shape-boi', pos = (0.925,0.925), scale = 0.075)
+        self.textObject = OnscreenText(text ='shape-boi', pos = (0.925,0.925), scale = 0.075,font=loader.loadFont('Fonts/Replicant.ttf'))
 
         self.thread = threading.Thread(target=self.udpConnect)
         self.thread2 = threading.Thread(target=self.runColorTrack)
-        self.connectButton = DirectButton(text=('Open Connection'),pos=(-0.3,0,-0.98), scale=0.090, command=self.openConnection, frameColor=(255,255,255,0.15))
-        self.trackButton = DirectButton(text=('Color Track'),pos=(-1,0,-0.98), scale=0.090, command=self.thread2.start,frameColor=(255,255,255,0.15),state=0)
-        self.connectButton.hide()
-        self.trackButton.hide()
+
+
         self.scoreUI = OnscreenText(text = "Score: 0",
                                     pos = (-1.3, 0.825),
                                     mayChange = True,
-                                    align = TextNode.ALeft)
+                                    align = TextNode.ALeft,font=loader.loadFont('Fonts/Legion.ttf'), scale=0.05)
         self.countDownUI = OnscreenText(text = "",
                                     pos = (0.0, 0.925),
                                     mayChange = True,
-                                    align = TextNode.ALeft)
+                                    align = TextNode.ALeft,font=loader.loadFont('Fonts/Legion.ttf'), scale=0.05)
 
         env = Environment("MorgansModels/mapTest2")
         env.plants()
@@ -130,19 +128,22 @@ class Game(ShowBase):
         self.possibleCharacters = ['MorgansModels/shape-boi-grab-test',"MorgansModels/shape-boi-grab_char3","MorgansModels/shape-boi-grab_char2","MorgansModels/shape-boi-grab_char4"]
         self.currIndexSelectionScreen = 0
 
+        # winning background Music
+        self.winSound = loader.loadSfx("sound/shapeboiSound2.ogg")
+        self.winSound.setLoop(True)
+
+        # normal backgroundMusic
+        self.backSound = loader.loadSfx("sound/shapeboiSound.ogg")
+        self.backSound.setLoop(True)
+        self.backSound.play()
+
+        self.connectButton = DirectButton(text=('Color Track'),pos=(-0.3,0,-0.98), scale=0.090, command=self.openConnection, frameColor=(255,255,255,0.0),text_font=loader.loadFont('Fonts/genotype.ttf'), text_fg=(255,255,255,1.0))
 
     def loadMainCharacter(self,mainCharModel):
 
         self.tempActor = Actor(mainCharModel,
                                 {"walk":"MorgansModels/shape-boi-grab-test-point_level2-ArmatureAction",
                                  "lift":"MorgansModels/shape-boi-grab-test-point_level2-IcosphereAction"})
-        '''
-        # test with more realistic character
-        self.tempActor = Actor("MorgansModels/mainCharacter_walking",
-                                {"walk":"MorgansModels/mainCharacter_walking-ArmatureAction",
-                                 "lift":"MorgansModels/shape-boi-grab-test-point_level2-IcosphereAction"})
-        '''
-
         self.tempActor.reparentTo(render)
         self.tempActor.setH(0)
         self.tempActor.setPos(0,54,-3)
@@ -180,9 +181,8 @@ class Game(ShowBase):
         currSelection.loadModel(newModel)
         #currSelection.loop("walk")
 
-
-        return 42
     def characterSelectionScreen(self):
+        self.connectButton.hide()
         self.titleMenu.hide()
         self.titleMenuBackdrop.hide()
         self.startButton.hide()
@@ -204,8 +204,34 @@ class Game(ShowBase):
         self.camera.setPos(self.possibleActor.getPos())
         self.camera.setZ(4)
         self.camera.setY(self.possibleActor.getY()-20)
-        self.selectButton = DirectButton(text=('Change Character'),pos=(-0.5,0.5,0), scale=0.090, command=self.selectionScreenCharacterChange, extraArgs=[self.possibleActor],frameColor=(255,255,255,0.5))
-        self.startButton2 = DirectButton(text=('StartGame'),pos=(0.5,0.5,0), scale=0.090, command=self.startGame, frameColor=(255,255,255,0.5))
+        self.selectButton = DirectButton(text=('Change Character'),pos=(0.0,0,-0.75), scale=0.050, command=self.selectionScreenCharacterChange, extraArgs=[self.possibleActor],frameColor=(255,255,255,0.0),text_font=loader.loadFont('Fonts/Legion.ttf'))
+        self.startButton2 = DirectButton(text=('StartGame'),pos=(0.0,0.0,0.75), scale=0.050, command=self.startGame, frameColor=(255,255,255,0.0),text_font=loader.loadFont('Fonts/Legion.ttf'))
+
+        # scenery for selection menu
+        self.shrub = loader.loadModel("MorgansModels/grass3")
+        self.shrub.setPos(205,207,-3)
+        self.shrub.setScale(4)
+        self.shrub.setH(180)
+        self.shrub.reparentTo(render)
+
+        self.shrub = loader.loadModel("MorgansModels/grass3")
+        self.shrub.setPos(195,207,-3)
+        self.shrub.setScale(4)
+        self.shrub.setH(180)
+        self.shrub.reparentTo(render)
+
+        self.shrub = loader.loadModel("MorgansModels/grass3")
+        self.shrub.setPos(200,210,-3)
+        self.shrub.setScale(6)
+        self.shrub.setH(270)
+        self.shrub.reparentTo(render)
+        '''
+        self.shrub = loader.loadModel("MorgansModels/mountains")
+        self.shrub.setPos(195,240,-8)
+        self.shrub.setScale(2.5)
+        self.shrub.setH(0)
+        self.shrub.reparentTo(render)
+        '''
 
 
 
@@ -219,6 +245,7 @@ class Game(ShowBase):
         self.leftCam.setY(118)
         self.leftCam.setP(-90)
         self.leftCam.reparentTo(render)
+        #self.leftCam
 
     def startMenu(self):
         self.font = loader.loadFont("Fonts/Replicant.ttf")
@@ -250,13 +277,15 @@ class Game(ShowBase):
                              text_font = self.font,
                              text_fg = (1, 1, 1, 1))
 
-        self.startButton = DirectButton(text=('StartGame'),pos=(0.5,0,0), scale=0.090, command=self.characterSelectionScreen, frameColor=(255,255,255,0.5))
-        self.instructionsButton = DirectButton(text=('Instructions'),pos=(-0.5,0,0), scale=0.090, frameColor=(255,255,255,0.5))
+        self.startButton = DirectButton(text=('StartGame'),pos=(0.5,0,0), scale=0.090, command=self.characterSelectionScreen, frameColor=(255,255,255,0.5), text_font=loader.loadFont('Fonts/Replicant.ttf'))
+        self.instructionsButton = DirectButton(text=('Instructions'),pos=(-0.5,0,0), scale=0.090, frameColor=(255,255,255,0.5), text_font=loader.loadFont('Fonts/Replicant.ttf'))
 
+        #self.trackButton = DirectButton(text=('Color Track'),pos=(-1,0,-0.98), scale=0.090, command=self.thread2.start,frameColor=(255,255,255,0.0),state=0,text_font=loader.loadFont('Fonts/genotype.ttf'))
 
     def startGame(self):
         self.startButton2.hide()
         self.selectButton.hide()
+        self.connectButton.hide()
         self.cameraSet()
         self.loadMainCharacter(self.mainCharacterModel)
         self.titleMenu.hide()
@@ -264,9 +293,9 @@ class Game(ShowBase):
         self.startButton.hide()
         self.instructionsButton.hide()
         if self.connectButton.isHidden():
-            self.connectButton.show()
-        if self.trackButton.isHidden():
-            self.trackButton.show()
+            self.connectButton.hide()
+        #if self.trackButton.isHidden():
+        #    self.trackButton.show()
         self.timerUpdate = taskMgr.doMethodLater(1.0, self.clockUpdate, 'handleMessage')
         self.keyMap = {
             "up" : False,
@@ -356,7 +385,8 @@ class Game(ShowBase):
 
     def openConnection(self):
         self.thread.start()
-        self.trackButton['state'] = 1
+        #self.trackButton['state'] = 1
+        self.thread2.start()
 
     def handleMessage(self,task):
         dt = globalClock.getDt()
@@ -427,7 +457,7 @@ class Game(ShowBase):
     def gameOverWin(self):
         # UI that is displayed when a win occurs
         self.connectButton.hide()
-        self.trackButton.hide()
+        #self.trackButton.hide()
         self.font = loader.loadFont("Fonts/Replicant.ttf")
         #self.titleMenuBackdrop = DirectFrame(frameColor = (0, 0, 0, 1),
                                              #frameSize = (-1, 1, -1, 1),
@@ -457,16 +487,18 @@ class Game(ShowBase):
                              text_font = self.font,
                              text_fg = (1, 1, 1, 1))
 
-        self.restartButton = DirectButton(text=('Play Again'),pos=(0.5,0,0), scale=0.090, frameColor=(255,255,255,0.5))
-        self.quitButton = DirectButton(text=('Quit Game'),pos=(-0.5,0,0), scale=0.090, frameColor=(255,255,255,0.5))
+        self.restartButton = DirectButton(text=('Play Again'),pos=(0.5,0,0), scale=0.090, frameColor=(255,255,255,0.5),text_font=loader.loadFont('Fonts/Replicant.ttf'))
+        self.quitButton = DirectButton(text=('Quit Game'),pos=(-0.5,0,0), scale=0.090, frameColor=(255,255,255,0.5),text_font=loader.loadFont('Fonts/Replicant.ttf'))
         #self.titleMenuBackdrop.hide()
         #self.titleMenu.hide()
         #self.restartButton.hide()
         #self.quitButton.hide()
+        self.backSound.stop()
+        self.winSound.play()
     def gameOverLose(self):
         # UI that is displayed when a win occurs
         self.connectButton.hide()
-        self.trackButton.hide()
+        #self.trackButton.hide()
         self.font = loader.loadFont("Fonts/Replicant.ttf")
         self.titleMenuBackdrop = DirectFrame(frameColor = (0, 0, 0, 1),
                                              frameSize = (-1, 1, -1, 1),
@@ -496,8 +528,8 @@ class Game(ShowBase):
                              text_font = self.font,
                              text_fg = (1, 1, 1, 1))
 
-        self.restartButton = DirectButton(text=('Play Again'),pos=(0.5,0,0), scale=0.090, frameColor=(255,255,255,0.5))
-        self.quitButton = DirectButton(text=('Quit Game'),pos=(-0.5,0,0), scale=0.090, frameColor=(255,255,255,0.5))
+        self.restartButton = DirectButton(text=('Play Again'),pos=(0.5,0,0), scale=0.090, frameColor=(255,255,255,0.5),text_font=loader.loadFont('Fonts/Replicant.ttf'))
+        self.quitButton = DirectButton(text=('Quit Game'),pos=(-0.5,0,0), scale=0.090, frameColor=(255,255,255,0.5),text_font=loader.loadFont('Fonts/Replicant.ttf'))
         #self.titleMenuBackdrop.hide()
         #self.titleMenu.hide()
         #self.restartButton.hide()

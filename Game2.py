@@ -69,21 +69,71 @@ class Game(ShowBase):
         env = Environment("MorgansModels/mapTest2")
         env.plants()
         #loader.loadModel("Models/Misc/environment")
-
+        self.mainCharacterModel = "MorgansModels/shape-boi-grab-test"
         self.clientMsg = ''
         self.carrying = False
         self.countDownTime = 60 # in seconds
+        # test with more realistic character
+        self.tempActor = Actor("MorgansModels/mainCharacter_walking",
+                                {"walk":"MorgansModels/mainCharacter_walking-ArmatureAction",
+                                 "lift":"MorgansModels/shape-boi-grab-test-point_level2-IcosphereAction"})
 
+
+        self.keyMap = None
+        self.savedFriends = []
+        self.myFriends = []
+        for i in range(4):
+            # this loop adds friends
+            self.tempActor2 = Actor("MorgansModels/shape-boi-grab-test",
+                                    {"walk":"MorgansModels/shape-boi-grab-test-ArmatureAction"})
+            self.tempActor2.reparentTo(render)
+            self.tempActor2.setH(180)
+            self.tempActor2.setPos(0+5*i,50+(i*4),-3)
+            self.tempActor2.setScale(0.5,0.5,0.5)
+            self.tempActor2.loop("walk")
+            self.myFriends.append(self.tempActor2)
+        print(len(self.myFriends))
+
+        self.score = len(self.savedFriends)
+
+
+        ambientLight = AmbientLight("ambient light")
+        ambientLight.setColor(Vec4(0.2, 0.2, 0.2, 1))
+        self.ambientLightNodePath = render.attachNewNode(ambientLight)
+        render.setLight(self.ambientLightNodePath)
+
+        # In the body of your code
+        mainLight = DirectionalLight("main light")
+        self.mainLightNodePath = render.attachNewNode(mainLight)
+        # Turn it around by 45 degrees, and tilt it down by 45 degrees
+        self.mainLightNodePath.setHpr(45, -45, 0)
+        render.setLight(self.mainLightNodePath)
         #render.setShaderAuto()
-        #self.environment.setPos(0,54,-3)
-        #self.environment.setH(90)
-        #self.environment.setP(0)
 
-        #self.environment.setScale(2)
-        #self.environment.setZ(-10)
+        self.updateTask2 = taskMgr.add(self.updateScore, "updateScore")
+        self.trackUpdate = taskMgr.add(self.handleMessage, 'handleMessage')
+        #self.updateTask3 = taskMgr.add(self.udpUpdate)
+
+        env.wallColliders()
+
+        self.disableMouse()
+        base.disableMouse()
+        self.camera.setPos(self.tempActor.getPos()+ Vec3(0,6,4))
+        #self.camera.setPos(0, 0, 50)
+        # Tilt the camera down by setting its pitch.
+        self.camera.setP(-12.5)
+
+        self.friendRoomCam()
+
+        self.startMenu()
+
+        self.possibleCharacters = ['MorgansModels/shape-boi-grab-test',"MorgansModels/shape-boi-grab_char3","MorgansModels/shape-boi-grab_char2","MorgansModels/shape-boi-grab_char4"]
+        self.currIndexSelectionScreen = 0
 
 
-        self.tempActor = Actor("MorgansModels/shape-boi-grab-test-point_level2",
+    def loadMainCharacter(self,mainCharModel):
+
+        self.tempActor = Actor(mainCharModel,
                                 {"walk":"MorgansModels/shape-boi-grab-test-point_level2-ArmatureAction",
                                  "lift":"MorgansModels/shape-boi-grab-test-point_level2-IcosphereAction"})
         '''
@@ -92,6 +142,7 @@ class Game(ShowBase):
                                 {"walk":"MorgansModels/mainCharacter_walking-ArmatureAction",
                                  "lift":"MorgansModels/shape-boi-grab-test-point_level2-IcosphereAction"})
         '''
+
         self.tempActor.reparentTo(render)
         self.tempActor.setH(0)
         self.tempActor.setPos(0,54,-3)
@@ -111,106 +162,54 @@ class Game(ShowBase):
         base.cTrav.addCollider(collider, self.pusher)
         self.pusher.setHorizontal(True)
         #collider.setZ(-3)
-        self.savedFriends = []
-        self.myFriends = []
-        for i in range(4):
-            # this loop adds friends
-            self.tempActor2 = Actor("MorgansModels/shape-boi-grab-test",
-                                    {"walk":"MorgansModels/shape-boi-grab-test-ArmatureAction"})
-            self.tempActor2.reparentTo(render)
-            self.tempActor2.setH(180)
-            self.tempActor2.setPos(0+5*i,50+(i*4),-3)
-            self.tempActor2.setScale(0.5,0.5,0.5)
-            self.tempActor2.loop("walk")
-            self.myFriends.append(self.tempActor2)
-        print(len(self.myFriends))
+
+    def changeActor(self, newActorModel):
+        # got some help with this post
+        # https://discourse.panda3d.org/t/replacing-model-in-actor/1447/5
+        self.tempActor.removePart('modelRoot')
+        self.tempActor.loadModel(newActorModel)
+
+    def selectionScreenCharacterChange(self, currSelection):
+        if self.currIndexSelectionScreen < (len(self.possibleCharacters)-1):
+            self.currIndexSelectionScreen +=1
+        else:
+            self.currIndexSelectionScreen = 0
+        newModel = self.possibleCharacters[self.currIndexSelectionScreen]
+        self.mainCharacterModel = self.possibleCharacters[self.currIndexSelectionScreen]
+        currSelection.removePart('modelRoot')
+        currSelection.loadModel(newModel)
+        #currSelection.loop("walk")
 
 
-
-
-        self.score = len(self.savedFriends)
-
-
-        ambientLight = AmbientLight("ambient light")
-        ambientLight.setColor(Vec4(0.2, 0.2, 0.2, 1))
-        self.ambientLightNodePath = render.attachNewNode(ambientLight)
-        render.setLight(self.ambientLightNodePath)
-
-        # In the body of your code
-        mainLight = DirectionalLight("main light")
-        self.mainLightNodePath = render.attachNewNode(mainLight)
-        # Turn it around by 45 degrees, and tilt it down by 45 degrees
-        self.mainLightNodePath.setHpr(45, -45, 0)
-        render.setLight(self.mainLightNodePath)
-        #render.setShaderAuto()
+        return 42
+    def characterSelectionScreen(self):
+        self.titleMenu.hide()
+        self.titleMenuBackdrop.hide()
+        self.startButton.hide()
+        self.instructionsButton.hide()
+        self.possibleActor = Actor("MorgansModels/shape-boi-grab-test-point_level2",
+                                {"walk":"MorgansModels/shape-boi-grab-test-point_level2-ArmatureAction",
+                                 "lift":"MorgansModels/shape-boi-grab-test-point_level2-IcosphereAction"})
         '''
-        liftSpot = Spotlight('spotlight')
-        liftSpot.setColor((0.75, 1, 1, 1))
-        self.spotLightNodePath = render.attachNewNode(liftSpot)
-        render.setLight(self.spotLightNodePath)
-        self.spotLightNodePath.setPos(self.tempActor2.getX(), self.tempActor2.getY(), self.tempActor2.getZ()+ 5)
-        self.spotLightNodePath.lookAt(self.tempActor2)
-        render.setShaderAuto()
+        # test with more realistic character
+        self.tempActor = Actor("MorgansModels/mainCharacter_walking",
+                                {"walk":"MorgansModels/mainCharacter_walking-ArmatureAction",
+                                 "lift":"MorgansModels/shape-boi-grab-test-point_level2-IcosphereAction"})
         '''
-
-
-
-        self.keyMap = {
-            "up" : False,
-            "down" : False,
-            "left" : False,
-            "right" : False,
-            "shoot" : False
-            }
-        self.accept("w", self.updateKeyMap, ["up", True])
-        self.accept("w-up", self.updateKeyMap, ["up", False])
-        self.accept("s", self.updateKeyMap, ["down", True])
-        self.accept("s-up", self.updateKeyMap, ["down", False])
-        self.accept("a", self.updateKeyMap, ["left", True])
-        self.accept("a-up", self.updateKeyMap, ["left", False])
-        self.accept("d", self.updateKeyMap, ["right", True])
-        self.accept("d-up", self.updateKeyMap, ["right", False])
-        self.accept("mouse1", self.updateKeyMap, ["shoot", True])
-        self.accept("mouse1-up", self.updateKeyMap, ["shoot", False])
-        self.updateTask = taskMgr.add(self.update, "update")
-        self.updateTask2 = taskMgr.add(self.updateScore, "updateScore")
-        self.trackUpdate = taskMgr.add(self.handleMessage, 'handleMessage')
-        #self.updateTask3 = taskMgr.add(self.udpUpdate)
+        self.possibleActor.reparentTo(render)
+        self.possibleActor.setH(180)
+        self.possibleActor.setPos(200,200,-3)
+        self.possibleActor.setScale(0.5,0.5,0.5)
+        #self.possibleActor.loop("walk")
+        self.camera.setPos(self.possibleActor.getPos())
+        self.camera.setZ(4)
+        self.camera.setY(self.possibleActor.getY()-20)
+        self.selectButton = DirectButton(text=('Change Character'),pos=(-0.5,0.5,0), scale=0.090, command=self.selectionScreenCharacterChange, extraArgs=[self.possibleActor],frameColor=(255,255,255,0.5))
+        self.startButton2 = DirectButton(text=('StartGame'),pos=(0.5,0.5,0), scale=0.090, command=self.startGame, frameColor=(255,255,255,0.5))
 
 
 
 
-        env.wallColliders()
-
-
-
-        '''
-        # towers
-        wallSolid = CollisionTube(-1, 37, -4, -1, 37, 3, 1)
-        wallNode = CollisionNode("wall")
-        wallNode.addSolid(wallSolid)
-        wall = render.attachNewNode(wallNode)
-        wall.setY(8.0)
-        wall.show()
-
-
-        wallSolid = CollisionTube(-4.5, 48, -4, -4.5, 48, 3, 1)
-        wallNode = CollisionNode("wall")
-        wallNode.addSolid(wallSolid)
-        wall = render.attachNewNode(wallNode)
-        wall.setY(8.0)
-        wall.show()
-        '''
-        self.disableMouse()
-        base.disableMouse()
-        self.camera.setPos(self.tempActor.getPos()+ Vec3(0,6,4))
-        #self.camera.setPos(0, 0, 50)
-        # Tilt the camera down by setting its pitch.
-        self.camera.setP(-12.5)
-
-        self.friendRoomCam()
-
-        self.startMenu()
 
     def friendRoomCam(self):
         self.leftCam = self.makeCamera(self.win, \
@@ -251,11 +250,15 @@ class Game(ShowBase):
                              text_font = self.font,
                              text_fg = (1, 1, 1, 1))
 
-        self.startButton = DirectButton(text=('StartGame'),pos=(0.5,0,0), scale=0.090, command=self.startGame, frameColor=(255,255,255,0.5))
+        self.startButton = DirectButton(text=('StartGame'),pos=(0.5,0,0), scale=0.090, command=self.characterSelectionScreen, frameColor=(255,255,255,0.5))
         self.instructionsButton = DirectButton(text=('Instructions'),pos=(-0.5,0,0), scale=0.090, frameColor=(255,255,255,0.5))
 
 
     def startGame(self):
+        self.startButton2.hide()
+        self.selectButton.hide()
+        self.cameraSet()
+        self.loadMainCharacter(self.mainCharacterModel)
         self.titleMenu.hide()
         self.titleMenuBackdrop.hide()
         self.startButton.hide()
@@ -265,6 +268,26 @@ class Game(ShowBase):
         if self.trackButton.isHidden():
             self.trackButton.show()
         self.timerUpdate = taskMgr.doMethodLater(1.0, self.clockUpdate, 'handleMessage')
+        self.keyMap = {
+            "up" : False,
+            "down" : False,
+            "left" : False,
+            "right" : False,
+            "shoot" : False
+            }
+        self.accept("w", self.updateKeyMap, ["up", True])
+        self.accept("w-up", self.updateKeyMap, ["up", False])
+        self.accept("s", self.updateKeyMap, ["down", True])
+        self.accept("s-up", self.updateKeyMap, ["down", False])
+        self.accept("a", self.updateKeyMap, ["left", True])
+        self.accept("a-up", self.updateKeyMap, ["left", False])
+        self.accept("d", self.updateKeyMap, ["right", True])
+        self.accept("d-up", self.updateKeyMap, ["right", False])
+        self.accept("mouse1", self.updateKeyMap, ["shoot", True])
+        self.accept("mouse1-up", self.updateKeyMap, ["shoot", False])
+        self.updateTask = taskMgr.add(self.update, "update")
+        #self.characterSelectionScreen()
+
 
     def circularMovement(self, object):
         # can call on an object to give it cirular motion
@@ -520,6 +543,7 @@ class Game(ShowBase):
 
 
     def update(self, task):
+
         # Get the amount of time since the last update
         dt = globalClock.getDt()
         # iterates over friends list to check if they need a selection light applied
@@ -543,6 +567,8 @@ class Game(ShowBase):
         if self.keyMap["shoot"]:
             self.cameraFollow()
             self.pickUpObject()
+            #self.changeActor("MorgansModels/mainCharacter_walking")
+
         if self.keyMap["shoot"] == False:
             self.setObjectDown()
             self.cameraSet()

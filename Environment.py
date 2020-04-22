@@ -27,6 +27,7 @@ from panda3d.core import Point3
 import time
 import subprocess
 import socket
+import random
 import threading
 from direct.gui.DirectGui import DirectFrame
 from panda3d.core import TextNode
@@ -91,6 +92,18 @@ class Environment():
 
         self.shrub = loader.loadModel("MorgansModels/shrub2")
         self.shrub.setPos(35,114,-3)
+        self.shrub.setScale(2)
+        self.shrub.setH(90)
+        self.shrub.reparentTo(render)
+
+        self.tree4 = loader.loadModel("MorgansModels/tree_two")
+        self.tree4.setPos(29,129,-3)
+        self.tree4.setScale(6)
+        self.tree4.setH(90)
+        self.tree4.reparentTo(render)
+
+        self.shrub = loader.loadModel("MorgansModels/shrub2")
+        self.shrub.setPos(27,129,-3)
         self.shrub.setScale(2)
         self.shrub.setH(90)
         self.shrub.reparentTo(render)
@@ -218,7 +231,18 @@ class Environment():
         self.shrub.setH(180)
         self.shrub.reparentTo(render)
 
-        # grass by big tree
+        self.shrub = loader.loadModel("MorgansModels/grass2")
+        self.shrub.setPos(20,95,-3)
+        self.shrub.setScale(5)
+        self.shrub.setH(0)
+        self.shrub.reparentTo(render)
+        self.shrub = loader.loadModel("MorgansModels/grass1")
+        self.shrub.setPos(20.5,85,-3)
+        self.shrub.setScale(1.5)
+        self.shrub.setH(180)
+        self.shrub.reparentTo(render)
+
+        # grass by big tree, right side of map
         self.shrub = loader.loadModel("MorgansModels/grass1")
         self.shrub.setPos(30,73.5,-3)
         self.shrub.setScale(2)
@@ -229,6 +253,50 @@ class Environment():
         self.shrub.setScale(1.5)
         self.shrub.setH(180)
         self.shrub.reparentTo(render)
+
+        self.shrub = loader.loadModel("MorgansModels/grass2")
+        self.shrub.setPos(30,53.5,-3)
+        self.shrub.setScale(5)
+        self.shrub.setH(90)
+        self.shrub.reparentTo(render)
+        self.shrub = loader.loadModel("MorgansModels/grass2")
+        self.shrub.setPos(25.5,53.5,-3)
+        self.shrub.setScale(1.5)
+        self.shrub.setH(180)
+        self.shrub.reparentTo(render)
+
+
+        # grass on left side of map
+        self.shrub = loader.loadModel("MorgansModels/grass2")
+        self.shrub.setPos(-30,73.5,-3)
+        self.shrub.setScale(4)
+        self.shrub.setH(90)
+        self.shrub.reparentTo(render)
+        self.shrub = loader.loadModel("MorgansModels/grass2")
+        self.shrub.setPos(-30.5,73.5,-3)
+        self.shrub.setScale(2)
+        self.shrub.setH(180)
+        self.shrub.reparentTo(render)
+
+        self.shrub = loader.loadModel("MorgansModels/grass3")
+        self.shrub.setPos(-20,40.5,-3)
+        self.shrub.setScale(4)
+        self.shrub.setH(90)
+        self.shrub.reparentTo(render)
+        self.shrub = loader.loadModel("MorgansModels/grass2")
+        self.shrub.setPos(-24.5,43.5,-3)
+        self.shrub.setScale(2)
+        self.shrub.setH(180)
+        self.shrub.reparentTo(render)
+
+        self.shrub = loader.loadModel("MorgansModels/grass3")
+        self.shrub.setPos(34,110,-3)
+        self.shrub.setScale(4)
+        self.shrub.setH(180)
+        self.shrub.reparentTo(render)
+
+
+
 
 
     def wallColliders(self):

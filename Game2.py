@@ -10,6 +10,7 @@
 # https://docs.panda3d.org/1.10/python/programming/collision-detection/collision-solids
 # https://arsthaumaturgis.github.io/Panda3DTutorial.io/tutorial/tut_lesson06.html
 # font: http://webpagepublicity.com/free-fonts-y.html#Free%20Fonts year 2000 replicant
+# http://www.mygamefast.com/volume1/issue7/3/ - second camera view
 
 
 
@@ -70,7 +71,7 @@ class Game(ShowBase):
         self.mainCharacterModel = "MorgansModels/shape-boi-grab-test"
         self.clientMsg = ''
         self.carrying = False
-        self.countDownTime = 60 # in seconds
+        self.countDownTime = 120 # in seconds
         # test with more realistic character
         self.tempActor = Actor("MorgansModels/mainCharacter_walking",
                                 {"walk":"MorgansModels/mainCharacter_walking-ArmatureAction",

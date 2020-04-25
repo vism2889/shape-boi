@@ -4,14 +4,12 @@
 
 ##### **shape-boi.  a shape in a world, looking for fun, and friendship.**
 
-Shape-boi aims to be an interactive VR-like social experience.  Built using python versions of panda3D and openCV, this app allows you to interact with twitter in a unique 3D game space.
+Shape-boi aims to be an interactive VR-like gaming experience.  Built using python versions of panda3D and openCV, this app allows you to control game characters with object tracking.
 
 ##Features:
 * **Cool 3D game engine:** Using panda3D and one of its built-in physics options, Bullet Physics Engine, shape-boi achieves interesting physics interactions, and hosts aesthetically appealing content created in blender.
 
 * **Color tracking with openCV:** Moves shape-boi around their 3D world, and eventually should allow users to pick up and interact with 3D game objects.
-
-* **Twitter API:** Connects to a given user account and ultimately gives user control over all of its functions, mainly the ability to view most recent tweets represented by game objects and game UI.
 
 * **Shape playground:** Allows you to instance a number of shapes, to build with, toss around the play room, or toss through a portal.  Wait what? A portal? Read on...
 

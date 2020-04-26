@@ -185,7 +185,6 @@ while True:
     frame = cv2.line(frame,(0,720),(1920,720),(255,0,0),2)
     cv2.namedWindow('Color Track',cv2.WINDOW_NORMAL)
     cv2.resizeWindow('Color Track',400, 400)
-    
     cv2.imshow('Color Track', frame)
 
 

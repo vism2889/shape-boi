@@ -38,6 +38,7 @@ from panda3d.core import TextNode
 from panda3d.core import OrthographicLens
 from panda3d.core import TransparencyAttrib
 from panda3d.core import NodePath
+import sys
 
 from Environment import *
 #from panda3d.core import Font
@@ -50,12 +51,13 @@ class Game(ShowBase):
         properties.setSize(1000, 750)
         self.win.requestProperties(properties)
         base.setBackgroundColor(0.5,1,0.5)
+        self.lights()
+        self.env = Environment("MorgansModels/mapTest2")
+        self.env.wallColliders()
+        self.env.plants()
+
+        # onscreen UI
         self.textObject = OnscreenText(text ='shape-boi', pos = (0.925,0.925), scale = 0.075,font=loader.loadFont('Fonts/Replicant.ttf'))
-
-        self.thread = threading.Thread(target=self.udpConnect)
-        self.thread2 = threading.Thread(target=self.runColorTrack)
-
-
         self.scoreUI = OnscreenText(text = "Score: 0",
                                     pos = (-1.3, 0.825),
                                     mayChange = True,
@@ -65,8 +67,9 @@ class Game(ShowBase):
                                     mayChange = True,
                                     align = TextNode.ALeft,font=loader.loadFont('Fonts/Legion.ttf'), scale=0.05)
 
-        env = Environment("MorgansModels/mapTest2")
-        env.plants()
+
+        self.thread = threading.Thread(target=self.udpConnect)
+        self.thread2 = threading.Thread(target=self.runColorTrack)
         #loader.loadModel("Models/Misc/environment")
         self.mainCharacterModel = "MorgansModels/shape-boi-grab-test"
         self.clientMsg = ''
@@ -77,8 +80,26 @@ class Game(ShowBase):
                                 {"walk":"MorgansModels/mainCharacter_walking-ArmatureAction",
                                  "lift":"MorgansModels/shape-boi-grab-test-point_level2-IcosphereAction"})
 
-
-        self.keyMap = None
+        self.gameOver = True
+        #self.keyMap = None
+        self.keyMap = {
+            "up" : False,
+            "down" : False,
+            "left" : False,
+            "right" : False,
+            "shoot" : False
+            }
+        self.accept("w", self.updateKeyMap, ["up", True])
+        self.accept("w-up", self.updateKeyMap, ["up", False])
+        self.accept("s", self.updateKeyMap, ["down", True])
+        self.accept("s-up", self.updateKeyMap, ["down", False])
+        self.accept("a", self.updateKeyMap, ["left", True])
+        self.accept("a-up", self.updateKeyMap, ["left", False])
+        self.accept("d", self.updateKeyMap, ["right", True])
+        self.accept("d-up", self.updateKeyMap, ["right", False])
+        self.accept("mouse1", self.updateKeyMap, ["shoot", True])
+        self.accept("mouse1-up", self.updateKeyMap, ["shoot", False])
+        self.updateTask = taskMgr.add(self.update, "update")
         self.savedFriends = []
         self.myFriends = []
         for i in range(4):
@@ -91,29 +112,17 @@ class Game(ShowBase):
             self.tempActor2.setScale(0.5,0.5,0.5)
             self.tempActor2.loop("walk")
             self.myFriends.append(self.tempActor2)
-        print(len(self.myFriends))
+        #print(len(self.myFriends))
 
         self.score = len(self.savedFriends)
 
 
-        ambientLight = AmbientLight("ambient light")
-        ambientLight.setColor(Vec4(0.2, 0.2, 0.2, 1))
-        self.ambientLightNodePath = render.attachNewNode(ambientLight)
-        render.setLight(self.ambientLightNodePath)
 
-        # In the body of your code
-        mainLight = DirectionalLight("main light")
-        self.mainLightNodePath = render.attachNewNode(mainLight)
-        # Turn it around by 45 degrees, and tilt it down by 45 degrees
-        self.mainLightNodePath.setHpr(45, -45, 0)
-        render.setLight(self.mainLightNodePath)
-        #render.setShaderAuto()
 
-        self.updateTask2 = taskMgr.add(self.updateScore, "updateScore")
-        self.trackUpdate = taskMgr.add(self.handleMessage, 'handleMessage')
+
         #self.updateTask3 = taskMgr.add(self.udpUpdate)
 
-        env.wallColliders()
+
 
         self.disableMouse()
         base.disableMouse()
@@ -126,7 +135,7 @@ class Game(ShowBase):
 
         self.startMenu()
 
-        self.possibleCharacters = ['MorgansModels/shape-boi-grab-test',"MorgansModels/shape-boi-grab_char3","MorgansModels/shape-boi-grab_char2","MorgansModels/shape-boi-grab_char4"]
+        self.possibleCharacters = ['MorgansModels/shape-boi-grab-test',"MorgansModels/shape-boi-grab_char3","MorgansModels/shape-boi-grab_char2","MorgansModels/shape-boi-grab_char4","MorgansModels/shape-boi-grab_mrSpike", "MorgansModels/shape-boi-grab_mrSquare"]
         self.currIndexSelectionScreen = 0
 
         # winning background Music
@@ -139,6 +148,20 @@ class Game(ShowBase):
         self.backSound.play()
 
         self.connectButton = DirectButton(text=('Color Track'),pos=(-0.3,0,-0.98), scale=0.090, command=self.openConnection, frameColor=(255,255,255,0.0),text_font=loader.loadFont('Fonts/genotype.ttf'), text_fg=(255,255,255,1.0))
+
+    def lights(self):
+        ambientLight = AmbientLight("ambient light")
+        ambientLight.setColor(Vec4(0.2, 0.2, 0.2, 1))
+        self.ambientLightNodePath = render.attachNewNode(ambientLight)
+        render.setLight(self.ambientLightNodePath)
+
+        # In the body of your code
+        mainLight = DirectionalLight("main light")
+        self.mainLightNodePath = render.attachNewNode(mainLight)
+        # Turn it around by 45 degrees, and tilt it down by 45 degrees
+        self.mainLightNodePath.setHpr(45, -45, 0)
+        render.setLight(self.mainLightNodePath)
+        #render.setShaderAuto()
 
     def loadMainCharacter(self,mainCharModel):
 
@@ -183,6 +206,7 @@ class Game(ShowBase):
         #currSelection.loop("walk")
 
     def characterSelectionScreen(self):
+        print('select screen')
         self.connectButton.hide()
         self.titleMenu.hide()
         self.titleMenuBackdrop.hide()
@@ -235,7 +259,8 @@ class Game(ShowBase):
         '''
 
 
-
+    def quitGame(self):
+        sys.exit()
 
 
     def friendRoomCam(self):
@@ -283,12 +308,69 @@ class Game(ShowBase):
 
         #self.trackButton = DirectButton(text=('Color Track'),pos=(-1,0,-0.98), scale=0.090, command=self.thread2.start,frameColor=(255,255,255,0.0),state=0,text_font=loader.loadFont('Fonts/genotype.ttf'))
 
+    def playAgain(self):
+        self.cleanup()
+        self.tempActor = Actor("MorgansModels/mainCharacter_walking",
+                                {"walk":"MorgansModels/mainCharacter_walking-ArmatureAction",
+                                 "lift":"MorgansModels/shape-boi-grab-test-point_level2-IcosphereAction"})
+        #self.loadMainCharacter("MorgansModels/shape-boi-grab-test")
+        #self.characterSelectionScreen()
+        self.myFriends = []
+        #self.savedFriends = 0
+        self.titleMenu.show()
+        self.titleMenuBackdrop.show()
+        self.startButton.show()
+        self.instructionsButton.show()
+        self.connectButton.show()
+        self.restartButton.hide()
+        self.quitButton.hide()
+        self.winTitleMenu.hide()
+        self.winSound.stop()
+        self.backSound.play()
+
+
+    def cleanup(self):
+        self.gameOver = True
+        for friend in self.savedFriends:
+            friend.cleanup()
+        self.savedFriends = []
+
+        for friend in self.myFriends:
+            friend.cleanup()
+        self.myFriends = []
+
+        self.possibleActor.cleanup()
+
+        if self.tempActor is not None:
+            self.tempActor.cleanup()
+            #self.tempActor = None
+        self.score = 0
+        self.countDownTime = 120
+        scoreString = str(self.score)
+        self.scoreUI.setText('Score: ' +scoreString)
+
     def startGame(self):
+        self.cleanup()
+        self.gameOver = False
+        self.updateTask2 = taskMgr.add(self.updateScore, "updateScore")
+        self.trackUpdate = taskMgr.add(self.handleMessage, 'handleMessage')
+        for i in range(4):
+            # this loop adds friends
+            self.tempActor2 = Actor("MorgansModels/shape-boi-grab-test",
+                                    {"walk":"MorgansModels/shape-boi-grab-test-ArmatureAction"})
+            self.tempActor2.reparentTo(render)
+            self.tempActor2.setH(180)
+            self.tempActor2.setPos(0+5*i,50+(i*4),-3)
+            self.tempActor2.setScale(0.5,0.5,0.5)
+            self.tempActor2.loop("walk")
+            self.myFriends.append(self.tempActor2)
+            print(self.myFriends)
+        self.loadMainCharacter(self.mainCharacterModel)
         self.startButton2.hide()
         self.selectButton.hide()
         self.connectButton.hide()
         self.cameraSet()
-        self.loadMainCharacter(self.mainCharacterModel)
+
         self.titleMenu.hide()
         self.titleMenuBackdrop.hide()
         self.startButton.hide()
@@ -298,24 +380,8 @@ class Game(ShowBase):
         #if self.trackButton.isHidden():
         #    self.trackButton.show()
         self.timerUpdate = taskMgr.doMethodLater(1.0, self.clockUpdate, 'handleMessage')
-        self.keyMap = {
-            "up" : False,
-            "down" : False,
-            "left" : False,
-            "right" : False,
-            "shoot" : False
-            }
-        self.accept("w", self.updateKeyMap, ["up", True])
-        self.accept("w-up", self.updateKeyMap, ["up", False])
-        self.accept("s", self.updateKeyMap, ["down", True])
-        self.accept("s-up", self.updateKeyMap, ["down", False])
-        self.accept("a", self.updateKeyMap, ["left", True])
-        self.accept("a-up", self.updateKeyMap, ["left", False])
-        self.accept("d", self.updateKeyMap, ["right", True])
-        self.accept("d-up", self.updateKeyMap, ["right", False])
-        self.accept("mouse1", self.updateKeyMap, ["shoot", True])
-        self.accept("mouse1-up", self.updateKeyMap, ["shoot", False])
-        self.updateTask = taskMgr.add(self.update, "update")
+
+
         #self.characterSelectionScreen()
 
 
@@ -361,10 +427,19 @@ class Game(ShowBase):
 
 
     def setObjectDown(self):
+        for object in self.myFriends:
+            vectorToObject = object.getPos()-self.tempActor.getPos()
+            vector2d = vectorToObject.getXy()
+            distanceToObject = vector2d.length()
+
+            if distanceToObject < 0.6 and self.carrying == True:
+            #print(distanceToObject, "pickup")
+            #self.selectionLight(self.tempActor2)
+                #self.carrying = True
         #self.tempActor2.setX(self.tempActor2.getX() + 0.25)
         #self.tempActor2.setY(self.tempActor2.getY() + 0.25)
-        self.tempActor2.setZ(-3)
-        self.carrying = False
+                object.setZ(-3)
+                self.carrying = False
 
     def cameraFollow(self):
         base.disableMouse()
@@ -395,24 +470,32 @@ class Game(ShowBase):
         (currX, currY) = (self.tempActor.getX(), self.tempActor.getY())
         # models movement instead of mirroring tracked objects (x,y)
         if msg == 'move_forward':
+            self.tempActor.setH(0)
             self.tempActor.setY(currY + 9*dt)
         elif msg == 'move_back':
+            self.tempActor.setH(180)
             self.tempActor.setY(currY - 9*dt)
         elif msg == 'move_left':
+            self.tempActor.setH(270)
             self.tempActor.setX(currX + 9*dt)
             #self.tempActor.setH(self.tempActor.getH() + 2)
         elif msg == 'move_right':
+            self.tempActor.setH(90)
             self.tempActor.setX(currX - 9*dt)
         elif msg == 'move_forward_right':
+            self.tempActor.setH(45)
             self.tempActor.setX(currX - 9*dt)
             self.tempActor.setY(currY + 9*dt)
         elif msg == 'move_forward_left':
+            self.tempActor.setH(315)
             self.tempActor.setX(currX + 9*dt)
             self.tempActor.setY(currY + 9*dt)
         elif msg == 'move_back_right':
+            self.tempActor.setH(135)
             self.tempActor.setX(currX - 9*dt)
             self.tempActor.setY(currY - 9*dt)
         elif msg == 'move_back_left':
+            self.tempActor.setH(225)
             self.tempActor.setX(currX + 9*dt)
             self.tempActor.setY(currY - 9*dt)
         else:
@@ -453,9 +536,14 @@ class Game(ShowBase):
         #useless_cat_call = subprocess.run(["python3", "/Users/morganvisnesky/shape_boi/colorTracker.py"], stdin=subprocess.PIPE, text=True)
         print('Running colorTracker.py...')
 
-        proc = subprocess.Popen('python3 colorTracker.py', shell=True)
+        self.proc = subprocess.Popen('python3 colorTracker.py', shell=True)
+
+    def killColorTrack(self):
+        self.proc.kill()
+        self.proc.kill()
 
     def gameOverWin(self):
+        #self.gameOver = True
         # UI that is displayed when a win occurs
         self.connectButton.hide()
         #self.trackButton.hide()
@@ -464,39 +552,41 @@ class Game(ShowBase):
                                              #frameSize = (-1, 1, -1, 1),
                                              #parent = render2d)
 
-        self.titleMenu = DirectFrame(frameColor = (1, 1, 1, 0))
+        self.winTitleMenu = DirectFrame(frameColor = (1, 1, 1, 0))
 
         title = DirectLabel(text = "You Won!",
                             scale = 0.1,
                             pos = (0, 0, 0.6),
-                            parent = self.titleMenu,
+                            parent = self.winTitleMenu,
                             relief = None,
                             text_font = self.font,
                             text_fg = (1, 1, 1, 1))
         title2 = DirectLabel(text = "Thanks for helping SHAPE BOI!",
                              scale = 0.1,
                              pos = (0, 0, 0.4),
-                             parent = self.titleMenu,
+                             parent = self.winTitleMenu,
                              relief = None,
                              text_font = self.font,
                              text_fg = (1, 1, 1, 1))
         title3 = DirectLabel(text = "Play Again?",
                              scale = 0.125,
                              pos = (0, 0, 0.2),
-                             parent = self.titleMenu,
+                             parent = self.winTitleMenu,
                              relief = None,
                              text_font = self.font,
                              text_fg = (1, 1, 1, 1))
 
-        self.restartButton = DirectButton(text=('Play Again'),pos=(0.5,0,0), scale=0.090, frameColor=(255,255,255,0.5),text_font=loader.loadFont('Fonts/Replicant.ttf'))
-        self.quitButton = DirectButton(text=('Quit Game'),pos=(-0.5,0,0), scale=0.090, frameColor=(255,255,255,0.5),text_font=loader.loadFont('Fonts/Replicant.ttf'))
+        self.restartButton = DirectButton(text=('Play Again'),pos=(0.5,0,0), scale=0.090,command=self.playAgain,frameColor=(255,255,255,0.5),text_font=loader.loadFont('Fonts/Replicant.ttf'))
+        self.quitButton = DirectButton(text=('Quit Game'),pos=(-0.5,0,0), scale=0.090, command=self.quitGame,frameColor=(255,255,255,0.5),text_font=loader.loadFont('Fonts/Replicant.ttf'))
         #self.titleMenuBackdrop.hide()
         #self.titleMenu.hide()
         #self.restartButton.hide()
         #self.quitButton.hide()
+        #self.WintitleMenu.show()
         self.backSound.stop()
         self.winSound.play()
     def gameOverLose(self):
+        #self.gameOver = True
         # UI that is displayed when a win occurs
         self.connectButton.hide()
         #self.trackButton.hide()
@@ -505,32 +595,32 @@ class Game(ShowBase):
                                              frameSize = (-1, 1, -1, 1),
                                              parent = render2d)
 
-        self.titleMenu = DirectFrame(frameColor = (1, 1, 1, 0))
+        self.loseTitleMenu = DirectFrame(frameColor = (1, 1, 1, 0))
 
         title = DirectLabel(text = "GAME OVER",
                             scale = 0.1,
                             pos = (0, 0, 0.6),
-                            parent = self.titleMenu,
+                            parent = self.loseTitleMenu,
                             relief = None,
                             text_font = self.font,
                             text_fg = (1, 1, 1, 1))
         title2 = DirectLabel(text = str(len(self.myFriends)) + " friends are still sad",
                              scale = 0.1,
                              pos = (0, 0, 0.4),
-                             parent = self.titleMenu,
+                             parent = self.loseTitleMenu,
                              relief = None,
                              text_font = self.font,
                              text_fg = (1, 1, 1, 1))
         title3 = DirectLabel(text = "Play Again?",
                              scale = 0.125,
                              pos = (0, 0, 0.2),
-                             parent = self.titleMenu,
+                             parent = self.loseTitleMenu,
                              relief = None,
                              text_font = self.font,
                              text_fg = (1, 1, 1, 1))
 
         self.restartButton = DirectButton(text=('Play Again'),pos=(0.5,0,0), scale=0.090, frameColor=(255,255,255,0.5),text_font=loader.loadFont('Fonts/Replicant.ttf'))
-        self.quitButton = DirectButton(text=('Quit Game'),pos=(-0.5,0,0), scale=0.090, frameColor=(255,255,255,0.5),text_font=loader.loadFont('Fonts/Replicant.ttf'))
+        self.quitButton = DirectButton(text=('Quit Game'),pos=(-0.5,0,0), scale=0.090, command=self.quitGame, frameColor=(255,255,255,0.5),text_font=loader.loadFont('Fonts/Replicant.ttf'))
         #self.titleMenuBackdrop.hide()
         #self.titleMenu.hide()
         #self.restartButton.hide()
@@ -582,6 +672,10 @@ class Game(ShowBase):
         # iterates over friends list to check if they need a selection light applied
         for i in range(len(self.myFriends)):
             self.selectionLight(self.myFriends[i])
+        for i in range(len(self.savedFriends)):
+            self.savedFriends[i].clearLight()
+            self.savedFriends[i].setLight(self.ambientLightNodePath)
+
 
         # If any movement keys are pressed, use the above time
         # to calculate how far to move the character, and apply that.
@@ -597,12 +691,12 @@ class Game(ShowBase):
         if self.keyMap["right"]:
             self.tempActor.setH(270) # changes to face direction of movement
             self.tempActor.setPos(self.tempActor.getPos() + Vec3(9.0*dt, 0, 0))
-        if self.keyMap["shoot"]:
+        if self.keyMap["shoot"] and self.gameOver == False:
             self.cameraFollow()
             self.pickUpObject()
             #self.changeActor("MorgansModels/mainCharacter_walking")
 
-        if self.keyMap["shoot"] == False:
+        if self.keyMap["shoot"] == False and self.gameOver == False:
             self.setObjectDown()
             self.cameraSet()
 

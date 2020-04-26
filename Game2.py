@@ -39,6 +39,8 @@ from panda3d.core import OrthographicLens
 from panda3d.core import TransparencyAttrib
 from panda3d.core import NodePath
 import sys
+import signal
+import os
 
 from Environment import *
 #from panda3d.core import Font
@@ -55,7 +57,8 @@ class Game(ShowBase):
         self.env = Environment("MorgansModels/mapTest2")
         self.env.wallColliders()
         self.env.plants()
-
+        self.proc = None
+        #self.angle = 'camSet'
         # onscreen UI
         self.textObject = OnscreenText(text ='shape-boi', pos = (0.925,0.925), scale = 0.075,font=loader.loadFont('Fonts/Replicant.ttf'))
         self.scoreUI = OnscreenText(text = "Score: 0",
@@ -87,7 +90,8 @@ class Game(ShowBase):
             "down" : False,
             "left" : False,
             "right" : False,
-            "shoot" : False
+            "shoot" : False,
+            "camera": False
             }
         self.accept("w", self.updateKeyMap, ["up", True])
         self.accept("w-up", self.updateKeyMap, ["up", False])
@@ -97,8 +101,10 @@ class Game(ShowBase):
         self.accept("a-up", self.updateKeyMap, ["left", False])
         self.accept("d", self.updateKeyMap, ["right", True])
         self.accept("d-up", self.updateKeyMap, ["right", False])
-        self.accept("mouse1", self.updateKeyMap, ["shoot", True])
-        self.accept("mouse1-up", self.updateKeyMap, ["shoot", False])
+        self.accept("space", self.updateKeyMap, ["shoot", True])
+        self.accept("space-up", self.updateKeyMap, ["shoot", False])
+        self.accept("p", self.updateKeyMap, ["camera", True])
+        self.accept("p-up", self.updateKeyMap, ["camera", False])
         self.updateTask = taskMgr.add(self.update, "update")
         self.savedFriends = []
         self.myFriends = []
@@ -147,7 +153,7 @@ class Game(ShowBase):
         self.backSound.setLoop(True)
         self.backSound.play()
 
-        self.connectButton = DirectButton(text=('Color Track'),pos=(-0.3,0,-0.98), scale=0.090, command=self.openConnection, frameColor=(255,255,255,0.0),text_font=loader.loadFont('Fonts/genotype.ttf'), text_fg=(255,255,255,1.0))
+
 
     def lights(self):
         ambientLight = AmbientLight("ambient light")
@@ -261,6 +267,12 @@ class Game(ShowBase):
 
     def quitGame(self):
         sys.exit()
+        #self.proc.kill()
+        #os.kill(self.proc.pid, signal.SIGINT)
+        #os.kill(self.proc.pid, signal.SIGINT)
+        #os.kill(self.proc.pid, signal.SIGINT)
+
+
 
 
     def friendRoomCam(self):
@@ -273,8 +285,124 @@ class Game(ShowBase):
         self.leftCam.reparentTo(render)
         #self.leftCam
 
+    def instructions(self):
+        self.titleMenu.hide()
+        self.titleMenuBackdrop.hide()
+        self.startButton.hide()
+        self.instructionsButton.hide()
+        self.connectButton.hide()
+        self.font = loader.loadFont('Fonts/gone.ttf')
+        self.font2 = loader.loadFont("Fonts/Legion.ttf")
+        self.instructionsMenuBackdrop = DirectFrame(frameColor = (0, 0, 0, 1),
+                                             frameSize = (-1, 1, -1, 1),
+                                             parent = render2d)
+
+        self.instructionsMenu = DirectFrame(frameColor = (1, 1, 1, 0))
+
+
+        title = DirectLabel(text = "INSTRUCTIONS",
+                            scale = 0.075,
+                            pos = (0, 0, 0.8),
+                            parent = self.instructionsMenu,
+                            relief = None,
+                            text_font = self.font2,
+                            text_fg = (1, 1, 1, 1))
+
+        title2 = DirectLabel(text = "Key Movement:",
+                             scale = 0.05,
+                             pos = (-1.2, 0, 0.4),
+                             parent = self.instructionsMenu,
+                             relief = None,
+                             text_font = self.font,
+                             text_align = TextNode.ALeft,
+                             text_fg = (1, 1, 1, 1))
+        title2 = DirectLabel(text = "W  -   forward",
+                             scale = 0.05,
+                             pos = (0.0, 0, 0.4),
+                             parent = self.instructionsMenu,
+                             relief = None,
+                             text_font = self.font,
+                             text_align = TextNode.ALeft,
+                             text_fg = (1, 1, 1, 1))
+        title2 = DirectLabel(text = "S  -   backward",
+                             scale = 0.05,
+                             pos = (0.0, 0, 0.3),
+                             parent = self.instructionsMenu,
+                             relief = None,
+                             text_font = self.font,
+                             text_align = TextNode.ALeft,
+                             text_fg = (1, 1, 1, 1))
+        title2 = DirectLabel(text = "A  -   left",
+                             scale = 0.05,
+                             pos = (0.0, 0, 0.2),
+                             parent = self.instructionsMenu,
+                             relief = None,
+                             text_font = self.font,
+                             text_align = TextNode.ALeft,
+                             text_fg = (1, 1, 1, 1))
+        title2 = DirectLabel(text = "D  -   right",
+                             scale = 0.05,
+                             pos = (0.0, 0, 0.1),
+                             parent = self.instructionsMenu,
+                             relief = None,
+                             text_font = self.font,
+                             text_align = TextNode.ALeft,
+                             text_fg = (1, 1, 1, 1))
+        title3 = DirectLabel(text = "Color-Tracking Movement:",
+                             scale = 0.05,
+                             pos = (-1.2, 0, 0.0),
+                             parent = self.instructionsMenu,
+                             relief = None,
+                             text_font = self.font,
+                             text_align = TextNode.ALeft,
+                             text_fg = (1, 1, 1, 1))
+        title3 = DirectLabel(text = "To enable color-tracking, click the color track button" + "\n" +"near the bottom of the window on the start page",
+                             scale = 0.05,
+                             pos = (-1.2, 0, -0.1),
+                             parent = self.instructionsMenu,
+                             relief = None,
+                             text_font = loader.loadFont('Fonts/gone.ttf'),
+                             text_align = TextNode.ALeft,
+                             text_fg = (1, 1, 1, 1))
+        title3 = DirectLabel(text = "Actions:",
+                             scale = 0.05,
+                             pos = (-1.2, 0, -0.3),
+                             parent = self.instructionsMenu,
+                             relief = None,
+                             text_font = self.font,
+                             text_align = TextNode.ALeft,
+                             text_fg = (1, 1, 1, 1))
+        title2 = DirectLabel(text = "Spacebar  -   pick-up object (hold down to carry)",
+                             scale = 0.05,
+                             pos = (0.0, 0, -0.4),
+                             parent = self.instructionsMenu,
+                             relief = None,
+                             text_font = self.font,
+                             text_align = TextNode.ALeft,
+                             text_fg = (1, 1, 1, 1))
+        title2 = DirectLabel(text = "P  -   change camera view",
+                             scale = 0.05,
+                             pos = (0.0, 0, -0.5),
+                             parent = self.instructionsMenu,
+                             relief = None,
+                             text_font = self.font,
+                             text_align = TextNode.ALeft,
+                             text_fg = (1, 1, 1, 1))
+
+        self.returnToMenuButton = DirectButton(text=('BACK TO MENU'),pos=(0.0,0,-0.9), scale=0.090, command=self.showStartMenuHideInstructions, frameColor=(200,155,155,0.0), text_font=self.font2, text_fg=(0.5,0.5,0.75,1.0))
+        #self.instructionsButton = DirectButton(text=('Instructions'),pos=(-0.5,0,0), scale=0.090, frameColor=(255,255,255,0.5), text_font=loader.loadFont('Fonts/Replicant.ttf'))
+    def showStartMenuHideInstructions(self):
+        self.titleMenu.show()
+        self.titleMenuBackdrop.show()
+        self.startButton.show()
+        self.instructionsButton.show()
+        self.connectButton.show()
+        self.instructionsMenuBackdrop.hide()
+        self.instructionsMenu.hide()
+        self.returnToMenuButton.hide()
+
     def startMenu(self):
-        self.font = loader.loadFont("Fonts/Replicant.ttf")
+        self.font = loader.loadFont("Fonts/Gone.ttf")
         self.titleMenuBackdrop = DirectFrame(frameColor = (0, 0, 0, 1),
                                              frameSize = (-1, 1, -1, 1),
                                              parent = render2d)
@@ -303,9 +431,9 @@ class Game(ShowBase):
                              text_font = self.font,
                              text_fg = (1, 1, 1, 1))
 
-        self.startButton = DirectButton(text=('StartGame'),pos=(0.5,0,0), scale=0.090, command=self.characterSelectionScreen, frameColor=(255,255,255,0.5), text_font=loader.loadFont('Fonts/Replicant.ttf'))
-        self.instructionsButton = DirectButton(text=('Instructions'),pos=(-0.5,0,0), scale=0.090, frameColor=(255,255,255,0.5), text_font=loader.loadFont('Fonts/Replicant.ttf'))
-
+        self.startButton = DirectButton(text=('StartGame'),pos=(0.5,0,0), scale=0.050, command=self.characterSelectionScreen, frameColor=(255,255,255,0.0), text_font=loader.loadFont('Fonts/Legion.ttf'),text_fg=(0.5,0.5,0.75,1.0))
+        self.instructionsButton = DirectButton(text=('Instructions'),pos=(-0.5,0,0), scale=0.050, command=self.instructions,frameColor=(255,255,255,0.0), text_font=loader.loadFont('Fonts/Legion.ttf'),text_fg=(0.5,0.5,0.75,1.0))
+        self.connectButton = DirectButton(text=('Color Track'),pos=(0.0,0,-0.7), scale=0.090, command=self.openConnection, frameColor=(255,255,255,0.0),text_font=loader.loadFont('Fonts/genotype.ttf'), text_fg=(255,255,255,1.0))
         #self.trackButton = DirectButton(text=('Color Track'),pos=(-1,0,-0.98), scale=0.090, command=self.thread2.start,frameColor=(255,255,255,0.0),state=0,text_font=loader.loadFont('Fonts/genotype.ttf'))
 
     def playAgain(self):
@@ -348,9 +476,11 @@ class Game(ShowBase):
         self.countDownTime = 120
         scoreString = str(self.score)
         self.scoreUI.setText('Score: ' +scoreString)
+        self.countDownUI.setText('')
 
     def startGame(self):
         self.cleanup()
+
         self.gameOver = False
         self.updateTask2 = taskMgr.add(self.updateScore, "updateScore")
         self.trackUpdate = taskMgr.add(self.handleMessage, 'handleMessage')
@@ -457,7 +587,7 @@ class Game(ShowBase):
 
     def updateKeyMap(self, controlName, controlState):
         self.keyMap[controlName] = controlState
-        print (controlName, "set to", controlState)
+        #print (controlName, "set to", controlState)
 
     def openConnection(self):
         self.thread.start()
@@ -547,7 +677,7 @@ class Game(ShowBase):
         # UI that is displayed when a win occurs
         self.connectButton.hide()
         #self.trackButton.hide()
-        self.font = loader.loadFont("Fonts/Replicant.ttf")
+        self.font = loader.loadFont("Fonts/Gone.ttf")
         #self.titleMenuBackdrop = DirectFrame(frameColor = (0, 0, 0, 1),
                                              #frameSize = (-1, 1, -1, 1),
                                              #parent = render2d)
@@ -576,8 +706,8 @@ class Game(ShowBase):
                              text_font = self.font,
                              text_fg = (1, 1, 1, 1))
 
-        self.restartButton = DirectButton(text=('Play Again'),pos=(0.5,0,0), scale=0.090,command=self.playAgain,frameColor=(255,255,255,0.5),text_font=loader.loadFont('Fonts/Replicant.ttf'))
-        self.quitButton = DirectButton(text=('Quit Game'),pos=(-0.5,0,0), scale=0.090, command=self.quitGame,frameColor=(255,255,255,0.5),text_font=loader.loadFont('Fonts/Replicant.ttf'))
+        self.restartButton = DirectButton(text=('Play Again'),pos=(0.5,0,0), scale=0.090,command=self.playAgain,frameColor=(255,255,255,0.5),text_font=self.font)
+        self.quitButton = DirectButton(text=('Quit Game'),pos=(-0.5,0,0), scale=0.090, command=self.quitGame,frameColor=(255,255,255,0.5),text_font=self.font)
         #self.titleMenuBackdrop.hide()
         #self.titleMenu.hide()
         #self.restartButton.hide()
@@ -590,7 +720,7 @@ class Game(ShowBase):
         # UI that is displayed when a win occurs
         self.connectButton.hide()
         #self.trackButton.hide()
-        self.font = loader.loadFont("Fonts/Replicant.ttf")
+        self.font = loader.loadFont("Fonts/gone.ttf")
         self.titleMenuBackdrop = DirectFrame(frameColor = (0, 0, 0, 1),
                                              frameSize = (-1, 1, -1, 1),
                                              parent = render2d)
@@ -619,8 +749,8 @@ class Game(ShowBase):
                              text_font = self.font,
                              text_fg = (1, 1, 1, 1))
 
-        self.restartButton = DirectButton(text=('Play Again'),pos=(0.5,0,0), scale=0.090, frameColor=(255,255,255,0.5),text_font=loader.loadFont('Fonts/Replicant.ttf'))
-        self.quitButton = DirectButton(text=('Quit Game'),pos=(-0.5,0,0), scale=0.090, command=self.quitGame, frameColor=(255,255,255,0.5),text_font=loader.loadFont('Fonts/Replicant.ttf'))
+        self.restartButton = DirectButton(text=('Play Again'),pos=(0.5,0,0), scale=0.090, frameColor=(255,255,255,0.5),text_font=self.font)
+        self.quitButton = DirectButton(text=('Quit Game'),pos=(-0.5,0,0), scale=0.090, command=self.quitGame, frameColor=(255,255,255,0.5),text_font=self.font)
         #self.titleMenuBackdrop.hide()
         #self.titleMenu.hide()
         #self.restartButton.hide()
@@ -664,7 +794,11 @@ class Game(ShowBase):
             return task.done
 
 
-
+    def changeCameraAngle(self):
+        if self.angle == 'camFollow':
+            self.cameraSet()
+        if self.angle == 'camSet':
+            self.cameraFollow()
     def update(self, task):
 
         # Get the amount of time since the last update
@@ -692,13 +826,22 @@ class Game(ShowBase):
             self.tempActor.setH(270) # changes to face direction of movement
             self.tempActor.setPos(self.tempActor.getPos() + Vec3(9.0*dt, 0, 0))
         if self.keyMap["shoot"] and self.gameOver == False:
-            self.cameraFollow()
+            #self.cameraFollow()
             self.pickUpObject()
             #self.changeActor("MorgansModels/mainCharacter_walking")
 
         if self.keyMap["shoot"] == False and self.gameOver == False:
             self.setObjectDown()
+            #self.cameraSet()
+
+        if self.keyMap["camera"]:
+            #self.setObjectDown()
+            self.cameraFollow()
+            #self.changeCameraAngle()
+        if self.keyMap["camera"] == False and self.gameOver == False:
+            #self.setObjectDown()
             self.cameraSet()
+            #self.changeCameraAngle()
 
         return task.cont
 

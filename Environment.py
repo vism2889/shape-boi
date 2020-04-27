@@ -295,8 +295,38 @@ class Environment():
         self.shrub.setH(180)
         self.shrub.reparentTo(render)
 
+        for i in range(1,30,4):
+            for j in range(1,40,4):
+                x = random.randint(0,30)
+                y = random.randint(0,40)
+                randScale = random.randint(1,3)
+                self.shrub = loader.loadModel("MorgansModels/grass2")
+                self.shrub.setPos(9.5+x,8.7+y,-3)
+                if i % 2 == 0:
+                    self.shrub.setScale(randScale)
+                if i % 5 == 0:
+                    self.shrub.setScale(randScale)
+                if i % 3 == 0 and j % 3 == 0:
+                    self.shrub.setScale(2.)
+                self.shrub.setH(180+(i*j))
+                self.shrub.reparentTo(render)
 
 
+        for i in range(1,50,4):
+            for j in range(1,40,4):
+                x = random.randint(0,50)
+                y = random.randint(0,40)
+                randScale = random.randint(1,4)
+                self.shrub = loader.loadModel("MorgansModels/grass2")
+                self.shrub.setPos(-30+x,72+y,-3)
+                if i % 2 == 0:
+                    self.shrub.setScale(randScale)
+                if i % 5 == 0:
+                    self.shrub.setScale(randScale)
+                if i % 3 == 0 and j % 3 == 0:
+                    self.shrub.setScale(2.)
+                self.shrub.setH(180+(i*j))
+                self.shrub.reparentTo(render)
 
 
     def wallColliders(self):
@@ -311,81 +341,81 @@ class Environment():
         wallNode.addSolid(wallSolid)
         wall = render.attachNewNode(wallNode)
         #wall.setY(8.0)
-        wall.show()
+        #wall.show()
 
         wallSolid = CollisionTube(-2.0, 61, -2, 7, 61, -2, 1.2)
         wallNode = CollisionNode("wall")
         wallNode.addSolid(wallSolid)
         wall = render.attachNewNode(wallNode)
         wall.setY(8.0)
-        wall.show()
+        #wall.show()
 
         wallSolid = CollisionTube(-7.0, 30, -2, -7, 61, -2, 1.2)
         wallNode = CollisionNode("wall")
         wallNode.addSolid(wallSolid)
         wall = render.attachNewNode(wallNode)
         wall.setY(8.0)
-        wall.show()
+        #wall.show()
 
         wallSolid = CollisionTube(7.0, 40, -2, 7, 61, -2, 1.2)
         wallNode = CollisionNode("wall")
         wallNode.addSolid(wallSolid)
         wall = render.attachNewNode(wallNode)
         wall.setY(8.0)
-        wall.show()
+        #wall.show()
 
         wallSolid = CollisionTube(-38, -1, -2, -38, 124, -2, 1.2)
         wallNode = CollisionNode("wall")
         wallNode.addSolid(wallSolid)
         wall = render.attachNewNode(wallNode)
         wall.setY(8.0)
-        wall.show()
+        #wall.show()
 
         wallSolid = CollisionTube(38, -1, -2, 38, 124, -2, 1.2)
         wallNode = CollisionNode("wall")
         wallNode.addSolid(wallSolid)
         wall = render.attachNewNode(wallNode)
         wall.setY(8.0)
-        wall.show()
+        #wall.show()
 
         wallSolid = CollisionTube(-38, 124, -2, 38, 124, -2, 1.2)
         wallNode = CollisionNode("wall")
         wallNode.addSolid(wallSolid)
         wall = render.attachNewNode(wallNode)
         wall.setY(8.0)
-        wall.show()
+        #wall.show()
 
         wallSolid = CollisionTube(-38, -1, -2, 38, -1, -2, 1.2)
         wallNode = CollisionNode("wall")
         wallNode.addSolid(wallSolid)
         wall = render.attachNewNode(wallNode)
         wall.setY(8.0)
-        wall.show()
+        #wall.show()
 
         wallSolid = CollisionTube(-38, 101, -2, 0, 101, -2, 1.2)
         wallNode = CollisionNode("wall")
         wallNode.addSolid(wallSolid)
         wall = render.attachNewNode(wallNode)
         wall.setY(8.0)
-        wall.show()
+        #wall.show()
 
         wallSolid = CollisionTube(1, 101, -2, 1, 114, -2, 1.2)
         wallNode = CollisionNode("wall")
         wallNode.addSolid(wallSolid)
         wall = render.attachNewNode(wallNode)
         wall.setY(8.0)
-        wall.show()
+        #wall.show()
 
         wallSolid = CollisionTube(22.5, 62, -2, 22.5, 93, -2, 1.2)
         wallNode = CollisionNode("wall")
         wallNode.addSolid(wallSolid)
         wall = render.attachNewNode(wallNode)
         wall.setY(8.0)
-        wall.show()
+        #wall.show()
 
         wallSolid = CollisionTube(8, 92.5, -2, 22.5, 92.5, -2, 1.2)
         wallNode = CollisionNode("wall")
         wallNode.addSolid(wallSolid)
         wall = render.attachNewNode(wallNode)
         wall.setY(8.0)
-        wall.show()
+        #wall.show()

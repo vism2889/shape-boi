@@ -52,12 +52,19 @@ class Game(ShowBase):
         properties = WindowProperties()
         properties.setSize(1000, 750)
         self.win.requestProperties(properties)
-        base.setBackgroundColor(0.5,1,0.5)
+        base.setBackgroundColor(0.5,1.0,0.75)
         self.lights()
         self.env = Environment("MorgansModels/mapTest2")
         self.env.wallColliders()
         self.env.plants()
         self.proc = None
+        self.instanceNumber = 10
+
+        # holds a lot of possible locations to instance friend characters
+        # so they dont get stuck in colliders
+        self.possibleLocations = [(-30,77),(-19.7,44.2),(-29.89,26.36),(-9.72,46.73),
+                                (29,56.54),(34.94,108.52),(24.95,88.33),(-22.3,102.55),
+                                (-30.5,93.2),(19.48,92.78),(27.27,20.63),(-31.24,13.93)]
         #self.angle = 'camSet'
         # onscreen UI
         self.textObject = OnscreenText(text ='shape-boi', pos = (0.925,0.925), scale = 0.075,font=loader.loadFont('Fonts/Replicant.ttf'))
@@ -106,29 +113,11 @@ class Game(ShowBase):
         self.accept("p", self.updateKeyMap, ["camera", True])
         self.accept("p-up", self.updateKeyMap, ["camera", False])
         self.updateTask = taskMgr.add(self.update, "update")
-        self.savedFriends = []
-        self.myFriends = []
-        for i in range(4):
-            # this loop adds friends
-            self.tempActor2 = Actor("MorgansModels/shape-boi-grab-test",
-                                    {"walk":"MorgansModels/shape-boi-grab-test-ArmatureAction"})
-            self.tempActor2.reparentTo(render)
-            self.tempActor2.setH(180)
-            self.tempActor2.setPos(0+5*i,50+(i*4),-3)
-            self.tempActor2.setScale(0.5,0.5,0.5)
-            self.tempActor2.loop("walk")
-            self.myFriends.append(self.tempActor2)
-        #print(len(self.myFriends))
-
-        self.score = len(self.savedFriends)
-
 
 
 
 
         #self.updateTask3 = taskMgr.add(self.udpUpdate)
-
-
 
         self.disableMouse()
         base.disableMouse()
@@ -143,6 +132,10 @@ class Game(ShowBase):
 
         self.possibleCharacters = ['MorgansModels/shape-boi-grab-test',"MorgansModels/shape-boi-grab_char3","MorgansModels/shape-boi-grab_char2","MorgansModels/shape-boi-grab_char4","MorgansModels/shape-boi-grab_mrSpike", "MorgansModels/shape-boi-grab_mrSquare"]
         self.currIndexSelectionScreen = 0
+        self.savedFriends = []
+        self.myFriends = []
+        self.score = len(self.savedFriends)
+        self.instanceFriends()
 
         # winning background Music
         self.winSound = loader.loadSfx("sound/shapeboiSound2.ogg")
@@ -184,9 +177,9 @@ class Game(ShowBase):
         self.pusher = CollisionHandlerPusher()
         colliderNode = CollisionNode("player")
         # Add a collision-sphere centred on (0, 0, 0), and with a radius of 0.3
-        colliderNode.addSolid(CollisionSphere(0,0,0, 0.7))
+        colliderNode.addSolid(CollisionSphere(0,0,1, 1.7))
         collider = self.tempActor.attachNewNode(colliderNode)
-        collider.show()
+        #collider.show()
         base.pusher.addCollider(collider, self.tempActor)
         # The traverser wants a collider, and a handler
         # that responds to that collider's collisions
@@ -264,16 +257,12 @@ class Game(ShowBase):
         self.shrub.reparentTo(render)
         '''
 
-
     def quitGame(self):
         sys.exit()
-        #self.proc.kill()
-        #os.kill(self.proc.pid, signal.SIGINT)
-        #os.kill(self.proc.pid, signal.SIGINT)
-        #os.kill(self.proc.pid, signal.SIGINT)
-
-
-
+        #self.thread.exit()
+        #self.thread2.exit()
+        #self.UDPServerSocket.shutdown()
+        #self.UDPServerSocket.close()
 
     def friendRoomCam(self):
         self.leftCam = self.makeCamera(self.win, \
@@ -283,7 +272,6 @@ class Game(ShowBase):
         self.leftCam.setY(118)
         self.leftCam.setP(-90)
         self.leftCam.reparentTo(render)
-        #self.leftCam
 
     def instructions(self):
         self.titleMenu.hide()
@@ -298,7 +286,6 @@ class Game(ShowBase):
                                              parent = render2d)
 
         self.instructionsMenu = DirectFrame(frameColor = (1, 1, 1, 0))
-
 
         title = DirectLabel(text = "INSTRUCTIONS",
                             scale = 0.075,
@@ -436,15 +423,12 @@ class Game(ShowBase):
         self.connectButton = DirectButton(text=('Color Track'),pos=(0.0,0,-0.7), scale=0.090, command=self.openConnection, frameColor=(255,255,255,0.0),text_font=loader.loadFont('Fonts/genotype.ttf'), text_fg=(255,255,255,1.0))
         #self.trackButton = DirectButton(text=('Color Track'),pos=(-1,0,-0.98), scale=0.090, command=self.thread2.start,frameColor=(255,255,255,0.0),state=0,text_font=loader.loadFont('Fonts/genotype.ttf'))
 
-    def playAgain(self):
+    def playAgainWin(self):
         self.cleanup()
         self.tempActor = Actor("MorgansModels/mainCharacter_walking",
                                 {"walk":"MorgansModels/mainCharacter_walking-ArmatureAction",
                                  "lift":"MorgansModels/shape-boi-grab-test-point_level2-IcosphereAction"})
-        #self.loadMainCharacter("MorgansModels/shape-boi-grab-test")
-        #self.characterSelectionScreen()
         self.myFriends = []
-        #self.savedFriends = 0
         self.titleMenu.show()
         self.titleMenuBackdrop.show()
         self.startButton.show()
@@ -456,19 +440,34 @@ class Game(ShowBase):
         self.winSound.stop()
         self.backSound.play()
 
+    def playAgainLose(self):
+        self.cleanup()
+        self.tempActor = Actor("MorgansModels/mainCharacter_walking",
+                                {"walk":"MorgansModels/mainCharacter_walking-ArmatureAction",
+                                 "lift":"MorgansModels/shape-boi-grab-test-point_level2-IcosphereAction"})
+        self.myFriends = []
+        self.titleMenu.show()
+        self.titleMenuBackdrop.show()
+        self.startButton.show()
+        self.instructionsButton.show()
+        self.connectButton.show()
+        self.restartButton.hide()
+        self.quitButton.hide()
+        self.loseTitleMenu.hide()
+        #self.winSound.stop()
+        #self.backSound.play()
 
     def cleanup(self):
         self.gameOver = True
         for friend in self.savedFriends:
             friend.cleanup()
-        self.savedFriends = []
 
+        self.savedFriends = []
         for friend in self.myFriends:
             friend.cleanup()
+
         self.myFriends = []
-
         self.possibleActor.cleanup()
-
         if self.tempActor is not None:
             self.tempActor.cleanup()
             #self.tempActor = None
@@ -478,23 +477,28 @@ class Game(ShowBase):
         self.scoreUI.setText('Score: ' +scoreString)
         self.countDownUI.setText('')
 
-    def startGame(self):
-        self.cleanup()
-
-        self.gameOver = False
-        self.updateTask2 = taskMgr.add(self.updateScore, "updateScore")
-        self.trackUpdate = taskMgr.add(self.handleMessage, 'handleMessage')
-        for i in range(4):
+    def instanceFriends(self):
+        for i in range(self.instanceNumber):
             # this loop adds friends
-            self.tempActor2 = Actor("MorgansModels/shape-boi-grab-test",
+            (x,y) = random.choice(self.possibleLocations)
+            character = random.choice(self.possibleCharacters)
+            self.tempActor2 = Actor(character,
                                     {"walk":"MorgansModels/shape-boi-grab-test-ArmatureAction"})
             self.tempActor2.reparentTo(render)
             self.tempActor2.setH(180)
-            self.tempActor2.setPos(0+5*i,50+(i*4),-3)
+            self.tempActor2.setPos(x,y,-3)
             self.tempActor2.setScale(0.5,0.5,0.5)
             self.tempActor2.loop("walk")
             self.myFriends.append(self.tempActor2)
             print(self.myFriends)
+
+    def startGame(self):
+        self.cleanup()
+        self.gameOver = False
+        self.updateTask2 = taskMgr.add(self.updateScore, "updateScore")
+        self.trackUpdate = taskMgr.add(self.handleMessage, 'handleMessage')
+        #self.trackUpdate = taskMgr.add(self.changeBackgroundColor, 'changeBackgroundColor')
+        self.instanceFriends()
         self.loadMainCharacter(self.mainCharacterModel)
         self.startButton2.hide()
         self.selectButton.hide()
@@ -509,11 +513,8 @@ class Game(ShowBase):
             self.connectButton.hide()
         #if self.trackButton.isHidden():
         #    self.trackButton.show()
+        #self.restartButton = DirectButton(text=('Play Again'),pos=(0.0,0,-0.9), scale=0.090,command=self.playAgain,frameColor=(255,255,255,0.5),text_font=self.font)
         self.timerUpdate = taskMgr.doMethodLater(1.0, self.clockUpdate, 'handleMessage')
-
-
-        #self.characterSelectionScreen()
-
 
     def circularMovement(self, object):
         # can call on an object to give it cirular motion
@@ -546,14 +547,10 @@ class Game(ShowBase):
             vector2d = vectorToObject.getXy()
             distanceToObject = vector2d.length()
 
-            if distanceToObject < 0.6 and self.carrying == False:
-            #print(distanceToObject, "pickup")
-            #self.selectionLight(self.tempActor2)
-                #self.carrying = True
+            if distanceToObject < 1.25:
                 object.setX(self.tempActor.getX() + 0.0)
                 object.setY(self.tempActor.getY() + 0.25)
                 object.setZ(self.tempActor.getZ() + 0.25)
-                #print(object.getY())
 
 
     def setObjectDown(self):
@@ -562,27 +559,18 @@ class Game(ShowBase):
             vector2d = vectorToObject.getXy()
             distanceToObject = vector2d.length()
 
-            if distanceToObject < 0.6 and self.carrying == True:
-            #print(distanceToObject, "pickup")
-            #self.selectionLight(self.tempActor2)
-                #self.carrying = True
-        #self.tempActor2.setX(self.tempActor2.getX() + 0.25)
-        #self.tempActor2.setY(self.tempActor2.getY() + 0.25)
+            if distanceToObject < 1.25:
                 object.setZ(-3)
-                self.carrying = False
+                #self.carrying = False
 
     def cameraFollow(self):
         base.disableMouse()
-
         self.camera.setPos(self.tempActor.getPos()+ Vec3(0,0,60))
         self.camera.setP(-90)
-        #self.rightCam.setPos(self.tempActor.getPos()+ Vec3(0,12,4))
-        #self.rightCam.setP(-12.5)
+
     def cameraSet(self):
         base.disableMouse()
         self.camera.setPos(self.tempActor.getPos()+ Vec3(0,-100,20))
-        #self.camera.setPos(0, 0, 50)
-        # Tilt the camera down by setting its pitch.
         self.camera.setP(-12.5)
 
     def updateKeyMap(self, controlName, controlState):
@@ -591,7 +579,7 @@ class Game(ShowBase):
 
     def openConnection(self):
         self.thread.start()
-        #self.trackButton['state'] = 1
+        #self.trackButton['state'] = 1 # used to disable track button until UDPconnect button is pressed
         self.thread2.start()
 
     def handleMessage(self,task):
@@ -608,7 +596,6 @@ class Game(ShowBase):
         elif msg == 'move_left':
             self.tempActor.setH(270)
             self.tempActor.setX(currX + 9*dt)
-            #self.tempActor.setH(self.tempActor.getH() + 2)
         elif msg == 'move_right':
             self.tempActor.setH(90)
             self.tempActor.setX(currX - 9*dt)
@@ -638,12 +625,11 @@ class Game(ShowBase):
         bufferSize  = 1024
         msgFromServer       = "Hello UDP Client"
         bytesToSend         = str.encode(msgFromServer)
-        UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-
-        UDPServerSocket.bind((localIP, localPort))
+        self.UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+        self.UDPServerSocket.bind((localIP, localPort))
         print("UDP server up and listening")
         while(True):
-            bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
+            bytesAddressPair = self.UDPServerSocket.recvfrom(bufferSize)
             message = bytesAddressPair[0]
             address = bytesAddressPair[1]
             self.clientMsg = message.decode()
@@ -651,6 +637,7 @@ class Game(ShowBase):
             print('server listened message from client: ', self.clientMsg)
             #self.handleMessage(clientMsg, currX, currY)
             '''
+            # using (x,y) to control characters movement
             print(clientMsg[:].split(',')[0])
             #print(clientIP)
             cx = int(clientMsg[:].split(',')[0])
@@ -658,14 +645,11 @@ class Game(ShowBase):
             cy = int(clientMsg[:].split(',')[1])
             self.shape.setY(-cy//2)
             '''
-
             # Sending a reply to client
-            UDPServerSocket.sendto(bytesToSend, address)
+            self.UDPServerSocket.sendto(bytesToSend, address)
 
     def runColorTrack(self):
-        #useless_cat_call = subprocess.run(["python3", "/Users/morganvisnesky/shape_boi/colorTracker.py"], stdin=subprocess.PIPE, text=True)
         print('Running colorTracker.py...')
-
         self.proc = subprocess.Popen('python3 colorTracker.py', shell=True)
 
     def killColorTrack(self):
@@ -706,7 +690,7 @@ class Game(ShowBase):
                              text_font = self.font,
                              text_fg = (1, 1, 1, 1))
 
-        self.restartButton = DirectButton(text=('Play Again'),pos=(0.5,0,0), scale=0.090,command=self.playAgain,frameColor=(255,255,255,0.5),text_font=self.font)
+        self.restartButton = DirectButton(text=('Play Again'),pos=(0.5,0,0), scale=0.090,command=self.playAgainWin,frameColor=(255,255,255,0.5),text_font=self.font)
         self.quitButton = DirectButton(text=('Quit Game'),pos=(-0.5,0,0), scale=0.090, command=self.quitGame,frameColor=(255,255,255,0.5),text_font=self.font)
         #self.titleMenuBackdrop.hide()
         #self.titleMenu.hide()
@@ -715,6 +699,7 @@ class Game(ShowBase):
         #self.WintitleMenu.show()
         self.backSound.stop()
         self.winSound.play()
+
     def gameOverLose(self):
         #self.gameOver = True
         # UI that is displayed when a win occurs
@@ -749,7 +734,7 @@ class Game(ShowBase):
                              text_font = self.font,
                              text_fg = (1, 1, 1, 1))
 
-        self.restartButton = DirectButton(text=('Play Again'),pos=(0.5,0,0), scale=0.090, frameColor=(255,255,255,0.5),text_font=self.font)
+        self.restartButton = DirectButton(text=('Play Again'),pos=(0.5,0,0), scale=0.090,command=self.playAgainLose, frameColor=(255,255,255,0.5),text_font=self.font)
         self.quitButton = DirectButton(text=('Quit Game'),pos=(-0.5,0,0), scale=0.090, command=self.quitGame, frameColor=(255,255,255,0.5),text_font=self.font)
         #self.titleMenuBackdrop.hide()
         #self.titleMenu.hide()
@@ -763,7 +748,7 @@ class Game(ShowBase):
             return task.done
         if len(self.myFriends) > 0:
             for friend in self.myFriends:
-                if (friend.getX() > -37 and friend.getX() < 0) \
+                if (friend.getX() > -37 and friend.getX() < -10) \
                     and (friend.getY() > 110 and friend.getY() < 132):
                     print('scored')
                     self.savedFriends.append(friend)
@@ -772,15 +757,13 @@ class Game(ShowBase):
                     self.scoreUI.setText('Score: ' +scoreString)
                     self.myFriends.remove(friend)
             return task.cont
-        elif self.score == 4:
+        elif self.score == self.instanceNumber:
             self.gameOverWin()
         else:
             return task.done
 
-
-
     def clockUpdate(self, task):
-        if self.score == 4:
+        if self.score == self.instanceNumber:
             return task.done
         if self.countDownTime >= 0:
             minutes = self.countDownTime // 60
@@ -794,11 +777,16 @@ class Game(ShowBase):
             return task.done
 
 
+
+
+
     def changeCameraAngle(self):
         if self.angle == 'camFollow':
             self.cameraSet()
         if self.angle == 'camSet':
             self.cameraFollow()
+
+
     def update(self, task):
 
         # Get the amount of time since the last update
@@ -815,19 +803,20 @@ class Game(ShowBase):
         # to calculate how far to move the character, and apply that.
         if self.keyMap["up"]:
             self.tempActor.setH(0) # changes to face direction of movement
-            self.tempActor.setPos(self.tempActor.getPos() + Vec3(0, 18.0*dt, 0))
+            self.tempActor.setPos(self.tempActor.getPos() + Vec3(0, 13.0*dt, 0))
         if self.keyMap["down"]:
             self.tempActor.setH(180) # changes to face direction of movement
-            self.tempActor.setPos(self.tempActor.getPos() + Vec3(0, -18.0*dt, 0))
+            self.tempActor.setPos(self.tempActor.getPos() + Vec3(0, -13.0*dt, 0))
         if self.keyMap["left"]:
             self.tempActor.setH(90) # changes to face direction of movement
-            self.tempActor.setPos(self.tempActor.getPos() + Vec3(-18.0*dt, 0, 0))
+            self.tempActor.setPos(self.tempActor.getPos() + Vec3(-13.0*dt, 0, 0))
         if self.keyMap["right"]:
             self.tempActor.setH(270) # changes to face direction of movement
-            self.tempActor.setPos(self.tempActor.getPos() + Vec3(18.0*dt, 0, 0))
+            self.tempActor.setPos(self.tempActor.getPos() + Vec3(13.0*dt, 0, 0))
         if self.keyMap["shoot"] and self.gameOver == False:
             #self.cameraFollow()
             self.pickUpObject()
+
             #self.changeActor("MorgansModels/mainCharacter_walking")
 
         if self.keyMap["shoot"] == False and self.gameOver == False:
@@ -842,7 +831,7 @@ class Game(ShowBase):
             #self.setObjectDown()
             self.cameraSet()
             #self.changeCameraAngle()
-
+        #print(self.tempActor.getX(), self.tempActor.getY())
         return task.cont
 
 

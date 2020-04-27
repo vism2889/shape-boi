@@ -39,37 +39,37 @@ def moveDirection(xval, yval):
     # maps colortracked coords to a 3 X 3 grid of movements
 
     # backwards movement
-    if ((xval > 1280) and (xval < 1920)) and ((yval > 720) and (yval < 1080)):
+    if ((xval > 1280) and (xval < 1820)) and ((yval > 720) and (yval < 980)):
         object_tag = 'moving back to the right'
         return ("move_back_right",object_tag)
 
-    elif ((xval > 0) and (xval < 640)) and ((yval > 720) and (yval < 1080)):
+    elif ((xval > 100) and (xval < 640)) and ((yval > 720) and (yval < 980)):
         object_tag = 'moving back to the left'
         return ("move_back_left",object_tag)
 
-    elif ((xval > 640) and (xval < 1280)) and ((yval > 720) and (yval < 1080)):
+    elif ((xval > 640) and (xval < 1280)) and ((yval > 720) and (yval < 980)):
         object_tag = 'moving back'
         return ("move_back",object_tag)
 
     # forwards movement
-    elif ((xval > 1280) and (xval < 1920)) and ((yval > 0) and (yval < 360)):
+    elif ((xval > 1280) and (xval < 1820)) and ((yval > 100) and (yval < 360)):
         object_tag = 'moving forward to the right'
         return ("move_forward_right",object_tag)
 
-    elif ((xval > 0) and (xval < 640)) and ((yval > 0) and (yval < 360)):
+    elif ((xval > 100) and (xval < 640)) and ((yval > 100) and (yval < 360)):
         object_tag = 'moving forward to the left'
         return ("move_forward_left",object_tag)
 
-    elif ((xval > 640) and (xval < 1280)) and ((yval > 0) and (yval < 360)):
+    elif ((xval > 640) and (xval < 1280)) and ((yval > 100) and (yval < 360)):
         object_tag = 'moving forward'
         return ("move_forward",object_tag)
 
 
         # left, right, stand_still movements
-    elif ((xval > 1280) and (xval < 1920)) and ((yval > 360) and (yval < 720)):
+    elif ((xval > 1280) and (xval < 1820)) and ((yval > 360) and (yval < 720)):
         object_tag = 'moving right'
         return ("move_right",object_tag)
-    elif ((xval > 0) and (xval < 640)) and ((yval > 360) and (yval < 720)):
+    elif ((xval > 100) and (xval < 640)) and ((yval > 360) and (yval < 720)):
         object_tag = 'moving left'
         return ("move_left",object_tag)
 
@@ -179,10 +179,14 @@ while True:
     #vertical lines
     frame = cv2.line(frame,(640,0),(640,1080),(255,0,0),2)
     frame = cv2.line(frame,(1280,0),(1280,1080),(255,0,0),2)
+    frame = cv2.line(frame,(100,0),(100,980),(255,0,0),2)
+    frame = cv2.line(frame,(1820,0),(1820,980),(255,0,0),2)
 
     # horizontal lines
     frame = cv2.line(frame,(0,360),(1920,360),(255,0,0),2)
     frame = cv2.line(frame,(0,720),(1920,720),(255,0,0),2)
+    frame = cv2.line(frame,(0,100),(1820,100),(255,0,0),2)
+    frame = cv2.line(frame,(0,980),(1820,980),(255,0,0),2)
     cv2.namedWindow('Color Track',cv2.WINDOW_NORMAL)
     cv2.resizeWindow('Color Track',400, 400)
     cv2.imshow('Color Track', frame)

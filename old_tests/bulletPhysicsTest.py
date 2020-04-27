@@ -180,8 +180,8 @@ class Picker(object):
 PICKABLETAG = "pickable"
 PICKKEYON = "mouse3"
 PICKKEYOFF = "mouse3-up"
-picker = Picker(base, base.render, base.cam, base.mouseWatcher, PICKKEYON, PICKKEYOFF,
-                BitMask32.all_on(), PICKABLETAG)
+#picker = Picker(base, base.render, base.cam, base.mouseWatcher, PICKKEYON, PICKKEYOFF,
+                #BitMask32.all_on(), PICKABLETAG)
 # World
 world = BulletWorld()
 world.setGravity(Vec3(0, 0, -9.81))

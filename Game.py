@@ -59,7 +59,8 @@ class Game(ShowBase):
         self.env.plants()
         self.proc = None
         self.instanceNumber = 10
-
+        self.rescueZone = Actor('MorgansModels/rescueZone-ArmatureAction.egg',
+                                {"spin":"MorgansModels/rescueZone-ArmatureAction"})
         # holds a lot of possible locations to instance friend characters
         # so they dont get stuck in colliders
         self.possibleLocations = [(-30,77),(-19.7,44.2),(-29.89,26.36),(-9.72,46.73),
@@ -471,6 +472,7 @@ class Game(ShowBase):
         if self.tempActor is not None:
             self.tempActor.cleanup()
             #self.tempActor = None
+        self.rescueZone.cleanup()
         self.score = 0
         self.countDownTime = 120
         scoreString = str(self.score)
@@ -511,6 +513,13 @@ class Game(ShowBase):
         self.instructionsButton.hide()
         if self.connectButton.isHidden():
             self.connectButton.hide()
+        self.rescueZone = Actor('MorgansModels/rescueZone',
+                                {"walk":"MorgansModels/rescueZone-ArmatureAction"})
+        self.rescueZone.reparentTo(render)
+        self.rescueZone.setH(0)
+        self.rescueZone.setPos(-17,120,3)
+        self.rescueZone.setScale(2.5,2.5,2.5)
+        self.rescueZone.loop("walk")
         #if self.trackButton.isHidden():
         #    self.trackButton.show()
         #self.restartButton = DirectButton(text=('Play Again'),pos=(0.0,0,-0.9), scale=0.090,command=self.playAgain,frameColor=(255,255,255,0.5),text_font=self.font)

@@ -51,10 +51,11 @@ class Game(ShowBase):
 
         properties = WindowProperties()
         properties.setSize(1000, 750)
+        properties.setTitle('shape-boi saves his friends!')
         self.win.requestProperties(properties)
         base.setBackgroundColor(0.5,1.0,0.75)
         self.lights()
-        self.env = Environment("MorgansModels/mapTest2")
+        self.env = Environment("MorgansModels/game-map3")
         self.env.wallColliders()
         self.env.plants()
         self.proc = None
@@ -127,7 +128,7 @@ class Game(ShowBase):
         # Tilt the camera down by setting its pitch.
         self.camera.setP(-12.5)
 
-        self.friendRoomCam()
+        #self.friendRoomCam()
 
         self.startMenu()
 
@@ -290,11 +291,25 @@ class Game(ShowBase):
 
         title = DirectLabel(text = "INSTRUCTIONS",
                             scale = 0.075,
-                            pos = (0, 0, 0.8),
+                            pos = (0, 0, 0.9),
                             parent = self.instructionsMenu,
                             relief = None,
                             text_font = self.font2,
                             text_fg = (1, 1, 1, 1))
+
+        title2 = DirectLabel(text = "In shape-world, shape-people thrive by working together and helping one another."+ "\n" \
+                                    "When recent disaster struck many shape-people were sperated from thier friends and families" + "\n" \
+                                    "making them all very sad."+ "\n" \
+                                    "Shape-boi's mission is to find his loved ones and bring them together" + "\n" \
+                                    "before sadness eats away at them any longer."+ "\n" \
+                                    "(Find all of shape-boi's loved ones and take them to the rescue zone to win the game!)",
+                             scale = 0.05,
+                             pos = (-1.2, 0, 0.75),
+                             parent = self.instructionsMenu,
+                             relief = None,
+                             text_font = self.font,
+                             text_align = TextNode.ALeft,
+                             text_fg=(0.5,0.5,0.75,1.0))
 
         title2 = DirectLabel(text = "Key Movement:",
                              scale = 0.05,
@@ -311,7 +326,7 @@ class Game(ShowBase):
                              relief = None,
                              text_font = self.font,
                              text_align = TextNode.ALeft,
-                             text_fg = (1, 1, 1, 1))
+                             text_fg = (1, 1, 0, 1))
         title2 = DirectLabel(text = "S  -   backward",
                              scale = 0.05,
                              pos = (0.0, 0, 0.3),
@@ -319,7 +334,7 @@ class Game(ShowBase):
                              relief = None,
                              text_font = self.font,
                              text_align = TextNode.ALeft,
-                             text_fg = (1, 1, 1, 1))
+                             text_fg = (1, 1, 0, 1))
         title2 = DirectLabel(text = "A  -   left",
                              scale = 0.05,
                              pos = (0.0, 0, 0.2),
@@ -327,7 +342,7 @@ class Game(ShowBase):
                              relief = None,
                              text_font = self.font,
                              text_align = TextNode.ALeft,
-                             text_fg = (1, 1, 1, 1))
+                             text_fg = (1, 1, 0, 1))
         title2 = DirectLabel(text = "D  -   right",
                              scale = 0.05,
                              pos = (0.0, 0, 0.1),
@@ -335,7 +350,7 @@ class Game(ShowBase):
                              relief = None,
                              text_font = self.font,
                              text_align = TextNode.ALeft,
-                             text_fg = (1, 1, 1, 1))
+                             text_fg = (1, 1, 0, 1))
         title3 = DirectLabel(text = "Color-Tracking Movement:",
                              scale = 0.05,
                              pos = (-1.2, 0, 0.0),
@@ -351,7 +366,7 @@ class Game(ShowBase):
                              relief = None,
                              text_font = loader.loadFont('Fonts/gone.ttf'),
                              text_align = TextNode.ALeft,
-                             text_fg = (1, 1, 1, 1))
+                             text_fg = (0, 1, 0, 1))
         title3 = DirectLabel(text = "Actions:",
                              scale = 0.05,
                              pos = (-1.2, 0, -0.3),
@@ -367,7 +382,7 @@ class Game(ShowBase):
                              relief = None,
                              text_font = self.font,
                              text_align = TextNode.ALeft,
-                             text_fg = (1, 1, 1, 1))
+                             text_fg = (1, 1, 0, 1))
         title2 = DirectLabel(text = "P  -   change camera view",
                              scale = 0.05,
                              pos = (0.0, 0, -0.5),
@@ -375,7 +390,7 @@ class Game(ShowBase):
                              relief = None,
                              text_font = self.font,
                              text_align = TextNode.ALeft,
-                             text_fg = (1, 1, 1, 1))
+                             text_fg = (1, 1, 0, 1))
 
         self.returnToMenuButton = DirectButton(text=('BACK TO MENU'),pos=(0.0,0,-0.9), scale=0.090, command=self.showStartMenuHideInstructions, frameColor=(200,155,155,0.0), text_font=self.font2, text_fg=(0.5,0.5,0.75,1.0))
         #self.instructionsButton = DirectButton(text=('Instructions'),pos=(-0.5,0,0), scale=0.090, frameColor=(255,255,255,0.5), text_font=loader.loadFont('Fonts/Replicant.ttf'))
@@ -455,6 +470,8 @@ class Game(ShowBase):
         self.restartButton.hide()
         self.quitButton.hide()
         self.loseTitleMenu.hide()
+        self.loseTitleMenuBackdrop.hide()
+
         #self.winSound.stop()
         #self.backSound.play()
 
@@ -603,26 +620,26 @@ class Game(ShowBase):
             self.tempActor.setH(180)
             self.tempActor.setY(currY - 9*dt)
         elif msg == 'move_left':
-            self.tempActor.setH(270)
-            self.tempActor.setX(currX + 9*dt)
-        elif msg == 'move_right':
             self.tempActor.setH(90)
             self.tempActor.setX(currX - 9*dt)
+        elif msg == 'move_right':
+            self.tempActor.setH(270)
+            self.tempActor.setX(currX + 9*dt)
         elif msg == 'move_forward_right':
-            self.tempActor.setH(45)
-            self.tempActor.setX(currX - 9*dt)
-            self.tempActor.setY(currY + 9*dt)
-        elif msg == 'move_forward_left':
             self.tempActor.setH(315)
             self.tempActor.setX(currX + 9*dt)
             self.tempActor.setY(currY + 9*dt)
-        elif msg == 'move_back_right':
-            self.tempActor.setH(135)
+        elif msg == 'move_forward_left':
+            self.tempActor.setH(45)
             self.tempActor.setX(currX - 9*dt)
-            self.tempActor.setY(currY - 9*dt)
-        elif msg == 'move_back_left':
+            self.tempActor.setY(currY + 9*dt)
+        elif msg == 'move_back_right':
             self.tempActor.setH(225)
             self.tempActor.setX(currX + 9*dt)
+            self.tempActor.setY(currY - 9*dt)
+        elif msg == 'move_back_left':
+            self.tempActor.setH(135)
+            self.tempActor.setX(currX - 9*dt)
             self.tempActor.setY(currY - 9*dt)
         else:
             self.tempActor.setX(currX)
@@ -691,6 +708,7 @@ class Game(ShowBase):
                              relief = None,
                              text_font = self.font,
                              text_fg = (1, 1, 1, 1))
+        '''
         title3 = DirectLabel(text = "Play Again?",
                              scale = 0.125,
                              pos = (0, 0, 0.2),
@@ -698,6 +716,7 @@ class Game(ShowBase):
                              relief = None,
                              text_font = self.font,
                              text_fg = (1, 1, 1, 1))
+                             '''
 
         self.restartButton = DirectButton(text=('Play Again'),pos=(0.5,0,0), scale=0.090,command=self.playAgainWin,frameColor=(255,255,255,0.5),text_font=self.font)
         self.quitButton = DirectButton(text=('Quit Game'),pos=(-0.5,0,0), scale=0.090, command=self.quitGame,frameColor=(255,255,255,0.5),text_font=self.font)
@@ -715,7 +734,7 @@ class Game(ShowBase):
         self.connectButton.hide()
         #self.trackButton.hide()
         self.font = loader.loadFont("Fonts/gone.ttf")
-        self.titleMenuBackdrop = DirectFrame(frameColor = (0, 0, 0, 1),
+        self.loseTitleMenuBackdrop = DirectFrame(frameColor = (1, 0, 0, 0.5),
                                              frameSize = (-1, 1, -1, 1),
                                              parent = render2d)
 
@@ -735,6 +754,7 @@ class Game(ShowBase):
                              relief = None,
                              text_font = self.font,
                              text_fg = (1, 1, 1, 1))
+        '''
         title3 = DirectLabel(text = "Play Again?",
                              scale = 0.125,
                              pos = (0, 0, 0.2),
@@ -742,6 +762,7 @@ class Game(ShowBase):
                              relief = None,
                              text_font = self.font,
                              text_fg = (1, 1, 1, 1))
+                             '''
 
         self.restartButton = DirectButton(text=('Play Again'),pos=(0.5,0,0), scale=0.090,command=self.playAgainLose, frameColor=(255,255,255,0.5),text_font=self.font)
         self.quitButton = DirectButton(text=('Quit Game'),pos=(-0.5,0,0), scale=0.090, command=self.quitGame, frameColor=(255,255,255,0.5),text_font=self.font)

@@ -33,6 +33,7 @@ bufferSize          = 1024
 UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
 cap = cv2.VideoCapture(0)
+
 object_tag = ''
 
 def moveDirection(xval, yval):
@@ -84,6 +85,8 @@ while True:
     object_tag = ''
     # _ is used to unpack values we don't want to use
     _, frame = cap.read()
+    frame = cv2.flip(frame,+1)
+
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
 
@@ -187,8 +190,10 @@ while True:
     frame = cv2.line(frame,(0,720),(1920,720),(255,0,0),2)
     frame = cv2.line(frame,(0,100),(1820,100),(255,0,0),2)
     frame = cv2.line(frame,(0,980),(1820,980),(255,0,0),2)
+
     cv2.namedWindow('Color Track',cv2.WINDOW_NORMAL)
     cv2.resizeWindow('Color Track',400, 400)
+    #cv2.flip(frame,frame,+1)
     cv2.imshow('Color Track', frame)
 
 

@@ -6,16 +6,12 @@
 
 
 # class to set up environment models and most other static game objects
-# lighting, colliders that correspond to the map walls, more TBD
+# colliders that correspond to the map walls, trees, grass
 
 
 from direct.showbase.ShowBase import ShowBase
-from panda3d.core import WindowProperties
-from panda3d.core import AmbientLight
-from panda3d.core import Spotlight
 from panda3d.core import Vec4
 from direct.actor.Actor import Actor
-from panda3d.core import DirectionalLight
 from panda3d.core import Vec4, Vec3
 from panda3d.core import CollisionTraverser
 from panda3d.core import CollisionHandlerPusher
@@ -24,16 +20,8 @@ from panda3d.core import CollisionTube
 from direct.gui.OnscreenText import OnscreenText
 from direct.gui.DirectGui import *
 from panda3d.core import Point3
-import time
-import subprocess
-import socket
 import random
-import threading
-from direct.gui.DirectGui import DirectFrame
-from panda3d.core import TextNode
-from panda3d.core import OrthographicLens
-from panda3d.core import TransparencyAttrib
-from panda3d.core import NodePath
+
 
 class Environment():
     def __init__(self, model):

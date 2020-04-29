@@ -1,12 +1,11 @@
 ###############################################################################
 # Name: Morgan Visnesky
 # AndewID: mvisnesk
-# FileName: Game2.py
+# FileName: Game.py
 ###############################################################################
+# This file holds most of the game functionality.
 
-# CURRENT WORKING VERSION OF GAME
-## working character controller with collisions
-# citation:
+# Citations:
 # https://docs.panda3d.org/1.10/python/programming/collision-detection/collision-solids
 # https://arsthaumaturgis.github.io/Panda3DTutorial.io/tutorial/tut_lesson06.html
 # font: http://webpagepublicity.com/free-fonts-y.html#Free%20Fonts year 2000 replicant
@@ -18,7 +17,6 @@ from direct.showbase.ShowBase import ShowBase
 from panda3d.core import WindowProperties
 from panda3d.core import AmbientLight
 from panda3d.core import Spotlight
-from panda3d.core import Vec4
 from direct.actor.Actor import Actor
 from panda3d.core import DirectionalLight
 from panda3d.core import Vec4, Vec3
@@ -29,21 +27,15 @@ from panda3d.core import CollisionTube
 from direct.gui.OnscreenText import OnscreenText
 from direct.gui.DirectGui import *
 from panda3d.core import Point3
+from panda3d.core import TextNode
+from panda3d.core import NodePath
 import time
 import subprocess
 import socket
 import threading
-from direct.gui.DirectGui import DirectFrame
-from panda3d.core import TextNode
-from panda3d.core import OrthographicLens
-from panda3d.core import TransparencyAttrib
-from panda3d.core import NodePath
 import sys
-import signal
 import os
-
 from Environment import *
-#from panda3d.core import Font
 
 class Game(ShowBase):
     def __init__(self):
@@ -62,12 +54,17 @@ class Game(ShowBase):
         self.instanceNumber = 10
         self.rescueZone = Actor('MorgansModels/rescueZone-ArmatureAction.egg',
                                 {"spin":"MorgansModels/rescueZone-ArmatureAction"})
+
         # holds a lot of possible locations to instance friend characters
         # so they dont get stuck in colliders
         self.possibleLocations = [(-30,77),(-19.7,44.2),(-29.89,26.36),(-9.72,46.73),
                                 (29,56.54),(34.94,108.52),(24.95,88.33),(-22.3,102.55),
-                                (-30.5,93.2),(19.48,92.78),(27.27,20.63),(-31.24,13.93)]
-        #self.angle = 'camSet'
+                                (-30.5,93.2),(19.48,92.78),(27.27,20.63),(-31.24,13.93),
+                                (-36,62.3),(-36,42.37),(-36,12.9),(-9,38.7),
+                                (6.68,21.32),(9,72),(10.11,104.51),(23.96,129.18),
+                                (-2.65,107.01),(-11.77,85.64),(-9.53,67.89),(-9,19.68),
+                                (3.8,24.27),(36,11),(36,53),(10.88,59.72),(-36.01,105.7)]
+
         # onscreen UI
         self.textObject = OnscreenText(text ='shape-boi', pos = (0.925,0.925), scale = 0.075,font=loader.loadFont('Fonts/Replicant.ttf'))
         self.scoreUI = OnscreenText(text = "Score: 0",
@@ -82,7 +79,7 @@ class Game(ShowBase):
 
         self.thread = threading.Thread(target=self.udpConnect)
         self.thread2 = threading.Thread(target=self.runColorTrack)
-        #loader.loadModel("Models/Misc/environment")
+
         self.mainCharacterModel = "MorgansModels/shape-boi-grab-test"
         self.clientMsg = ''
         self.carrying = False
@@ -93,7 +90,9 @@ class Game(ShowBase):
                                  "lift":"MorgansModels/shape-boi-grab-test-point_level2-IcosphereAction"})
 
         self.gameOver = True
-        #self.keyMap = None
+
+
+
         self.keyMap = {
             "up" : False,
             "down" : False,
@@ -117,18 +116,13 @@ class Game(ShowBase):
         self.updateTask = taskMgr.add(self.update, "update")
 
 
-
-
-        #self.updateTask3 = taskMgr.add(self.udpUpdate)
-
         self.disableMouse()
         base.disableMouse()
         self.camera.setPos(self.tempActor.getPos()+ Vec3(0,6,4))
-        #self.camera.setPos(0, 0, 50)
+
         # Tilt the camera down by setting its pitch.
         self.camera.setP(-12.5)
 
-        #self.friendRoomCam()
 
         self.startMenu()
 
@@ -156,16 +150,15 @@ class Game(ShowBase):
         self.ambientLightNodePath = render.attachNewNode(ambientLight)
         render.setLight(self.ambientLightNodePath)
 
-        # In the body of your code
         mainLight = DirectionalLight("main light")
         self.mainLightNodePath = render.attachNewNode(mainLight)
         # Turn it around by 45 degrees, and tilt it down by 45 degrees
         self.mainLightNodePath.setHpr(45, -45, 0)
         render.setLight(self.mainLightNodePath)
-        #render.setShaderAuto()
+
 
     def loadMainCharacter(self,mainCharModel):
-
+        # loads the main character object with specified model
         self.tempActor = Actor(mainCharModel,
                                 {"walk":"MorgansModels/shape-boi-grab-test-point_level2-ArmatureAction",
                                  "lift":"MorgansModels/shape-boi-grab-test-point_level2-IcosphereAction"})
@@ -178,16 +171,12 @@ class Game(ShowBase):
         self.cTrav = CollisionTraverser()
         self.pusher = CollisionHandlerPusher()
         colliderNode = CollisionNode("player")
-        # Add a collision-sphere centred on (0, 0, 0), and with a radius of 0.3
         colliderNode.addSolid(CollisionSphere(0,0,1, 1.7))
         collider = self.tempActor.attachNewNode(colliderNode)
         #collider.show()
         base.pusher.addCollider(collider, self.tempActor)
-        # The traverser wants a collider, and a handler
-        # that responds to that collider's collisions
         base.cTrav.addCollider(collider, self.pusher)
         self.pusher.setHorizontal(True)
-        #collider.setZ(-3)
 
     def changeActor(self, newActorModel):
         # got some help with this post
@@ -204,10 +193,9 @@ class Game(ShowBase):
         self.mainCharacterModel = self.possibleCharacters[self.currIndexSelectionScreen]
         currSelection.removePart('modelRoot')
         currSelection.loadModel(newModel)
-        #currSelection.loop("walk")
 
     def characterSelectionScreen(self):
-        print('select screen')
+        #print('select screen')
         self.connectButton.hide()
         self.titleMenu.hide()
         self.titleMenuBackdrop.hide()
@@ -260,6 +248,7 @@ class Game(ShowBase):
         '''
 
     def quitGame(self):
+        # exits the game , does not shut down colorTracker.py.
         sys.exit()
         #self.thread.exit()
         #self.thread2.exit()
@@ -267,6 +256,8 @@ class Game(ShowBase):
         #self.UDPServerSocket.close()
 
     def friendRoomCam(self):
+        # not currently is use, but is a second camera view that is displayed in the lower right hand corner, it shows a
+        # view of the rescue room, so you can check on your friends, is currently getting obstructed by other game objects
         self.leftCam = self.makeCamera(self.win, \
                             displayRegion = (0.79, 0.99, 0.01, 0.21), useCamera=None)
         self.leftCam.setZ(50)
@@ -276,6 +267,7 @@ class Game(ShowBase):
         self.leftCam.reparentTo(render)
 
     def instructions(self):
+        # holds all data for instructions menu
         self.titleMenu.hide()
         self.titleMenuBackdrop.hide()
         self.startButton.hide()
@@ -394,6 +386,7 @@ class Game(ShowBase):
 
         self.returnToMenuButton = DirectButton(text=('BACK TO MENU'),pos=(0.0,0,-0.9), scale=0.090, command=self.showStartMenuHideInstructions, frameColor=(200,155,155,0.0), text_font=self.font2, text_fg=(0.5,0.5,0.75,1.0))
         #self.instructionsButton = DirectButton(text=('Instructions'),pos=(-0.5,0,0), scale=0.090, frameColor=(255,255,255,0.5), text_font=loader.loadFont('Fonts/Replicant.ttf'))
+
     def showStartMenuHideInstructions(self):
         self.titleMenu.show()
         self.titleMenuBackdrop.show()
@@ -440,6 +433,7 @@ class Game(ShowBase):
         #self.trackButton = DirectButton(text=('Color Track'),pos=(-1,0,-0.98), scale=0.090, command=self.thread2.start,frameColor=(255,255,255,0.0),state=0,text_font=loader.loadFont('Fonts/genotype.ttf'))
 
     def playAgainWin(self):
+        # hides loosing screen and takes you to main menu
         self.cleanup()
         self.tempActor = Actor("MorgansModels/mainCharacter_walking",
                                 {"walk":"MorgansModels/mainCharacter_walking-ArmatureAction",
@@ -457,6 +451,7 @@ class Game(ShowBase):
         self.backSound.play()
 
     def playAgainLose(self):
+        # hides winning screen and takes you to main menu
         self.cleanup()
         self.tempActor = Actor("MorgansModels/mainCharacter_walking",
                                 {"walk":"MorgansModels/mainCharacter_walking-ArmatureAction",
@@ -476,6 +471,7 @@ class Game(ShowBase):
         #self.backSound.play()
 
     def cleanup(self):
+        # used to destroy game objects and reset them when 'Play Agian' is selected
         self.gameOver = True
         for friend in self.savedFriends:
             friend.cleanup()
@@ -497,6 +493,7 @@ class Game(ShowBase):
         self.countDownUI.setText('')
 
     def instanceFriends(self):
+        # used to instance friends in a semi random location based on predermined coordinates that dont contain colliders
         for i in range(self.instanceNumber):
             # this loop adds friends
             (x,y) = random.choice(self.possibleLocations)
@@ -509,9 +506,10 @@ class Game(ShowBase):
             self.tempActor2.setScale(0.5,0.5,0.5)
             self.tempActor2.loop("walk")
             self.myFriends.append(self.tempActor2)
-            print(self.myFriends)
+            #print(self.myFriends)
 
     def startGame(self):
+        # initializes game play
         self.cleanup()
         self.gameOver = False
         self.updateTask2 = taskMgr.add(self.updateScore, "updateScore")
@@ -549,6 +547,7 @@ class Game(ShowBase):
         object.reparent_to(circle_center)
 
     def selectionLight(self, selection):
+        # highlights objects close to main character
         vectorToObject = selection.getPos()-self.tempActor.getPos()
         vector2d = vectorToObject.getXy()
         distanceToObject = vector2d.length()
@@ -568,6 +567,7 @@ class Game(ShowBase):
 
 
     def pickUpObject(self):
+        # used to pick up friend object
         for object in self.myFriends:
             vectorToObject = object.getPos()-self.tempActor.getPos()
             vector2d = vectorToObject.getXy()
@@ -580,6 +580,7 @@ class Game(ShowBase):
 
 
     def setObjectDown(self):
+        # places friend object on ground if they are currently being held
         for object in self.myFriends:
             vectorToObject = object.getPos()-self.tempActor.getPos()
             vector2d = vectorToObject.getXy()
@@ -590,11 +591,13 @@ class Game(ShowBase):
                 #self.carrying = False
 
     def cameraFollow(self):
+        # sets camera to overheadview, follows main character
         base.disableMouse()
         self.camera.setPos(self.tempActor.getPos()+ Vec3(0,0,60))
         self.camera.setP(-90)
 
     def cameraSet(self):
+        # sets camera to 3rd person view, follows main character
         base.disableMouse()
         self.camera.setPos(self.tempActor.getPos()+ Vec3(0,-100,20))
         self.camera.setP(-12.5)
@@ -609,6 +612,7 @@ class Game(ShowBase):
         self.thread2.start()
 
     def handleMessage(self,task):
+        # handles message from colorTracker.py
         dt = globalClock.getDt()
         msg = self.clientMsg
         (currX, currY) = (self.tempActor.getX(), self.tempActor.getY())
@@ -646,6 +650,8 @@ class Game(ShowBase):
         return task.cont
 
     def udpConnect(self):
+        # UDP code from here https://pythontic.com/modules/socket/udp-client-server-example
+        # message is converted to a meaningful movement command in the colorTracker.py script
         localIP     = "127.0.0.1"
         localPort   = 20001
         bufferSize  = 1024
@@ -675,15 +681,16 @@ class Game(ShowBase):
             self.UDPServerSocket.sendto(bytesToSend, address)
 
     def runColorTrack(self):
+        # runs the color-tracking script that corresponds to this game
         print('Running colorTracker.py...')
         self.proc = subprocess.Popen('python3 colorTracker.py', shell=True)
 
     def killColorTrack(self):
+        # not currently working, but supposed to help with terminating openCV subprocess
         self.proc.kill()
         self.proc.kill()
 
     def gameOverWin(self):
-        #self.gameOver = True
         # UI that is displayed when a win occurs
         self.connectButton.hide()
         #self.trackButton.hide()
@@ -729,7 +736,6 @@ class Game(ShowBase):
         self.winSound.play()
 
     def gameOverLose(self):
-        #self.gameOver = True
         # UI that is displayed when a win occurs
         self.connectButton.hide()
         #self.trackButton.hide()
@@ -747,13 +753,23 @@ class Game(ShowBase):
                             relief = None,
                             text_font = self.font,
                             text_fg = (1, 1, 1, 1))
-        title2 = DirectLabel(text = str(len(self.myFriends)) + " friends are still sad",
-                             scale = 0.1,
-                             pos = (0, 0, 0.4),
-                             parent = self.loseTitleMenu,
-                             relief = None,
-                             text_font = self.font,
-                             text_fg = (1, 1, 1, 1))
+        if len(self.myFriends) > 1:
+            title2 = DirectLabel(text = str(len(self.myFriends)) + " friends are still sad",
+                                 scale = 0.1,
+                                 pos = (0, 0, 0.4),
+                                 parent = self.loseTitleMenu,
+                                 relief = None,
+                                 text_font = self.font,
+                                 text_fg = (1, 1, 1, 1))
+        else:
+            title2 = DirectLabel(text = str(len(self.myFriends)) + " friend is still sad",
+                                 scale = 0.1,
+                                 pos = (0, 0, 0.4),
+                                 parent = self.loseTitleMenu,
+                                 relief = None,
+                                 text_font = self.font,
+                                 text_fg = (1, 1, 1, 1))
+
         '''
         title3 = DirectLabel(text = "Play Again?",
                              scale = 0.125,
@@ -772,6 +788,9 @@ class Game(ShowBase):
         #self.quitButton.hide()
 
     def updateScore(self, task):
+        # updates the score by checking to see if any of the friend objects in the myFriends list are within the bounds
+        # of the rescue zone.
+
         #self.scoreUI.setText('0')
         if self.countDownTime <= 0:
             self.gameOverLose()
@@ -793,6 +812,7 @@ class Game(ShowBase):
             return task.done
 
     def clockUpdate(self, task):
+        # updates countdown timer
         if self.score == self.instanceNumber:
             return task.done
         if self.countDownTime >= 0:
@@ -818,6 +838,8 @@ class Game(ShowBase):
 
 
     def update(self, task):
+        # got tons of help with task manager here:
+        # https://arsthaumaturgis.github.io/Panda3DTutorial.io/tutorial/tut_lesson05.html
 
         # Get the amount of time since the last update
         dt = globalClock.getDt()

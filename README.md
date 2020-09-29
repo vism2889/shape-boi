@@ -17,9 +17,9 @@ Shape-boi aims to be a fun VR-like gaming experience.  Built using Python versio
 
 * Game.py uses the subprocess module to run colorTrack.py, and uses sockets to listen to control messages being sent from the color tracker.
 
-<img src="https://github.com/vism2889/shape-boi/blob/master/shape-boi-color-track.gif" width="600">
+<img src="https://github.com/vism2889/shape-boi/blob/master/shape-boi-color-track.gif" width="200">
 
-<img src="https://github.com/vism2889/shape-boi/blob/master/shape-boi-color-track-game-play.gif" width="600">
+<img src="https://github.com/vism2889/shape-boi/blob/master/shape-boi-color-track-game-play.gif" width="400">
 
 #Requirements:
 - Python3

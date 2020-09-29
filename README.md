@@ -4,7 +4,11 @@
 
 ##### **shape-boi.  a shape in a world, trying to save his loved ones.**
 
+<img src="https://github.com/vism2889/shape-boi/blob/master/shape_boi_char_select.gif" width="400"> <img src="https://github.com/vism2889/shape-boi/blob/master/shape-boi-gameplay-1.gif" width="400">
+
 Shape-boi aims to be a fun VR-like gaming experience.  Built using Python versions of panda3D and openCV, this app allows you to control game characters with object tracking via your webcam.
+
+<img src="https://github.com/vism2889/shape-boi/blob/master/shape-boi-color-track.gif" width="200"> <img src="https://github.com/vism2889/shape-boi/blob/master/shape-boi-color-track-game-play.gif" width="300">
 
 ##Features:
 * Utilizes many features of the panda3D game engine for Python and C++.
@@ -17,7 +21,7 @@ Shape-boi aims to be a fun VR-like gaming experience.  Built using Python versio
 
 * Game.py uses the subprocess module to run colorTrack.py, and uses sockets to listen to control messages being sent from the color tracker.
 
-<img src="https://github.com/vism2889/shape-boi/blob/master/shape-boi-color-track.gif" width="200"> | <img src="https://github.com/vism2889/shape-boi/blob/master/shape-boi-color-track-game-play.gif" width="400">
+
 
 #Requirements:
 - Python3
